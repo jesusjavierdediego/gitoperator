@@ -7,26 +7,38 @@ import (
 func main() {
 	//var content = "{\"created_at\": \"Wed Jul 03 11:00:08 +0000 2020\",\"id\": 1275753321895211003}"
 
-	//remote_repo_url := "http://localhost:3000/jdediego/GitAsNoSQL_1.git"
-	local_repo_path := "/home/administrator/go/src/me/gitpoc/gitlocal"
-	//local_file_path := "record4.json"
-	//Clone(remote_repo_url, local_repo_path)
-	//NewFile(local_repo_path, local_file_path)
-	//UpdateFile(local_repo_path, local_file_path, content)
+	local_repo_path := "/Users/administrator/workspace/projects/go/src/me/gitoperator/localrepo"
+	// remote_repo_url := "http://localhost:3000/jdediego/GoNoSQL_1.git"
+	// Clone(remote_repo_url, local_repo_path)
 
 	var id = "1275753321895211007"
 	var filename = id + ".json"
 	var content = "{\"created_at\": \"Wed Mar 03 11:00:08 +0000 2020\",\"id\": " + id + "}"
-	var event RecordEvent
-	event.Id = id
-	event.Group = ""
-	event.Unit = "UsFirst"
-	event.Priority = "HIGH"
-	event.ReceptionTime = 0
-	event.SendingTime = 0
-	event.OperationType = "update"
-	event.Content = content
-	//NewFile(local_repo_path, filename, content)
-	UpdateFile(local_repo_path, filename, content)
+	var newRecordEvent RecordEvent
+	newRecordEvent.Id = id
+	newRecordEvent.Group = ""
+	newRecordEvent.Unit = "UsFirst"
+	newRecordEvent.Priority = "HIGH"
+	newRecordEvent.ReceptionTime = 0
+	newRecordEvent.SendingTime = 0
+	newRecordEvent.OperationType = "new"
+	newRecordEvent.RecordContent = content
+
+	var updateRecordEvent RecordEvent
+	updateRecordEvent.Id = id
+	updateRecordEvent.Group = ""
+	updateRecordEvent.Unit = "UsFirst"
+	updateRecordEvent.Priority = "HIGH"
+	updateRecordEvent.ReceptionTime = 0
+	updateRecordEvent.SendingTime = 0
+	updateRecordEvent.OperationType = "update"
+	updateRecordEvent.RecordContent = ""
+	var fields map[string]string
+	fields = make(map[string]string)
+	fields["created_at"] = "Wed Dec 23 11:00:08 +0000 2020"
+
+	//NewFile(local_repo_path, filename, newRecordEvent)
+	UpdateFile(local_repo_path, filename, updateRecordEvent)
+	
 	
 }

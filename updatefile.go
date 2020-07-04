@@ -4,10 +4,11 @@ import (
 "fmt"
 "time"
 "os"
+"strings"
 "path/filepath"
 "io/ioutil"
-"bytes"
-"encoding/json"
+//"bytes"
+//"encoding/json"
 "gopkg.in/src-d/go-git.v4"
 "gopkg.in/src-d/go-git.v4/plumbing/object"
 . "gopkg.in/src-d/go-git.v4/_examples"
@@ -20,7 +21,7 @@ import (
 // - Add
 // - commit
 // - push
-func UpdateFile(local_repo_path string, file_name string, content string) {
+func UpdateFile(local_repo_path string, file_name string, event RecordEvent) {
 	r, err := git.PlainOpen(local_repo_path)
 	CheckIfError(err)
 
@@ -28,12 +29,24 @@ func UpdateFile(local_repo_path string, file_name string, content string) {
 	CheckIfError(err)
 
 	Info("write content to file")
-	var prettyJSON bytes.Buffer
-	jsonErr := json.Indent(&prettyJSON, []byte(content), "", "\t")
-	CheckIfError(jsonErr)
 	filename := filepath.Join(local_repo_path, file_name)
-	err = ioutil.WriteFile(filename, prettyJSON.Bytes(), 0644)
-	CheckIfError(err)
+	// OPTION 1: write all to file
+	// var prettyJSON bytes.Buffer
+	// jsonErr := json.Indent(&prettyJSON, []byte(content), "", "\t")
+	// CheckIfError(jsonErr)
+	// err = ioutil.WriteFile(filename, prettyJSON.Bytes(), 0644)
+	// CheckIfError(err)
+
+	// OPTION 2: replace by line
+	//replaceContentInFile(filename)
+
+	// OPTION 3: Iterate fields abd replace by line
+	if len(event.Fields) > 0 {
+		for k, v := range event.Fields {
+			replaceJSONContentInFileByLine(filename, k, v)
+		}
+	} 
+	
 	Info("Written content to file " + file_name)
 
 
@@ -92,4 +105,28 @@ func UpdateFile(local_repo_path string, file_name string, content string) {
 		Progress: os.Stdout,
 	})
 	CheckIfError(err)
+}
+
+// TODO
+func replaceJSONContentInFileByLine(filepath string, key string, value string) {
+}
+
+func replaceContentInFile(filepath string) {
+	input, err := ioutil.ReadFile(filepath)
+        if err != nil {
+            fmt.Println("error opening file: ", err)
+        }
+
+        lines := strings.Split(string(input), "\n")
+
+        for i, line := range lines {
+            if strings.Contains(line, "Wed Mar 03 11:00:08 +0000 2020") {
+                lines[i] = "\"created_at\": \"Wed Mar 15 15:00:08 +0000 2020\","
+            }
+        }
+        output := strings.Join(lines, "\n")
+        err = ioutil.WriteFile(filepath, []byte(output), 0644)
+        if err != nil {
+			fmt.Println("error writing to file: ", err)
+        }
 }

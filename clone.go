@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	//"os"
+	"os"
 	"strings"
-
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
-
 	. "gopkg.in/src-d/go-git.v4/_examples"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
 // Example of an specific use case:
@@ -24,7 +23,15 @@ func Clone(remote_repo_url string, local_repo_path string) {
 	// and fetching the objects, exactly as:
 	Info("git clone %s %s", remote_repo_url, local_repo_path)
 
-	r, err := git.PlainClone(local_repo_path, false, &git.CloneOptions{URL: remote_repo_url})
+	r, err := git.PlainClone(local_repo_path, false, &git.CloneOptions{
+		Auth: &http.BasicAuth{
+			Username: "jdediego",
+			Password: "Turing_326",
+		},
+		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+		URL: remote_repo_url,
+		Progress: os.Stdout,
+	})
 	CheckIfError(err)
 
 	// Getting the latest commit on the current branch

@@ -8,5 +8,6 @@ type RecordEvent struct {
 	SendingTime int64 `json:"sending_time"` // Time of sending by the client
 	ReceptionTime int64 `json:"reception_time"` // Time of processing by the API
 	Priority string `json:"priority"`  // API can qualify an event with a priority to be considered in concurrent writing decisions (HIGH | MEDIUM | LOW)
-	Content string `json:"content"` // empty if op type == delete
+	RecordContent string `json:"record_content"` // empty if op OperationType == delete | update
+	Fields map[string]string `json:"fields"` // Map of field names and content. Only when OperationType == update
 }
