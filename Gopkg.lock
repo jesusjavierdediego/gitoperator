@@ -62,6 +62,30 @@
   version = "v1.4.0"
 
 [[projects]]
+  digest = "1:2a2e825aeb56307876e9856f5121faba194f196f0f282e71d84bb419b8e67c19"
+  name = "github.com/tdewolff/minify"
+  packages = [
+    ".",
+    "json",
+  ]
+  pruneopts = "UT"
+  revision = "c86dd764169e70ab04e3b0d5fd5e478657a6c83d"
+  version = "v2.3.6"
+
+[[projects]]
+  digest = "1:3cf2157fa20efc08f4581d6c33cd2a2b81286db1db03895e7e4b291f55379d0e"
+  name = "github.com/tdewolff/parse"
+  packages = [
+    ".",
+    "buffer",
+    "json",
+    "strconv",
+  ]
+  pruneopts = "UT"
+  revision = "1b0354dccc7aceb4528eb638fbfec60d20338a29"
+  version = "v2.3.4"
+
+[[projects]]
   digest = "1:172f94a6b3644a8f9e6b5e5b7fc9fe1e42d424f52a0300b2e7ab1e57db73f85d"
   name = "github.com/xanzy/ssh-agent"
   packages = ["."]
@@ -198,6 +222,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/sergi/go-diff/diffmatchpatch",
+    "github.com/tdewolff/minify/json",
     "gopkg.in/src-d/go-git.v4",
     "gopkg.in/src-d/go-git.v4/_examples",
     "gopkg.in/src-d/go-git.v4/plumbing/object",
