@@ -40,7 +40,9 @@ func UpdateFile(local_repo_path string, file_name string, event RecordEvent) {
 	// OPTION 2: replace by line
 	//replaceContentInFile(filename)
 
-	// OPTION 3: Iterate fields abd replace by line
+	// OPTION 3:
+	// Pretty ptrint incoming payload  (whole record is needed)
+	// Iterate lines in file, compare lines in file with incoming. If ot does not match, replace with the new line
 	if len(event.Fields) > 0 {
 		for k, v := range event.Fields {
 			replaceJSONContentInFileByLine(filename, k, v)
@@ -121,7 +123,7 @@ func replaceContentInFile(filepath string) {
 
         for i, line := range lines {
             if strings.Contains(line, "Wed Mar 03 11:00:08 +0000 2020") {
-                lines[i] = "\"created_at\": \"Wed Mar 15 15:00:08 +0000 2020\","
+                lines[i] = "\"created_at\": \"Wed Mar 15 15:00:08 +0000 2020\"," //replace?
             }
         }
         output := strings.Join(lines, "\n")

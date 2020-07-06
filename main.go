@@ -36,6 +36,7 @@ func main() {
 	var fields map[string]string
 	fields = make(map[string]string)
 	fields["created_at"] = "Wed Dec 23 11:00:08 +0000 2020"
+	fields["created_at"] = "Wed Dec 23 11:00:08 +0000 2020"
 
 	//NewFile(local_repo_path, filename, newRecordEvent)
 	UpdateFile(local_repo_path, filename, updateRecordEvent)
