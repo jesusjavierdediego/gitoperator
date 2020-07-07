@@ -1,0 +1,16 @@
+profile: integration
+
+kafka:
+  bootstrapserver: "localhost:9094"
+  Groupid: mygroup
+  Sessiontimeout: 5000
+  Eventschannelenabled: true  
+  Rebalanceenabled: true
+  Partitioneofenabled: true
+  autooffset: earliest
+  consumertopic: incoming_git
+  gitactionbacktopic: outgoing_git
+  alerttopic: outgoing_alert
+  messageminsize: 10e3
+  messagemaxsize: 10e6
+  

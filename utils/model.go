@@ -1,5 +1,4 @@
-package main
-
+package utils
 
 type RecordEvent struct {
 	Id   string `json:"id"` // Name of the blob/file
