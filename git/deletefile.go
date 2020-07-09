@@ -6,8 +6,10 @@ import (
 	
 	// "gopkg.in/src-d/go-git.v4"
 	// "gopkg.in/src-d/go-git.v4/plumbing/object"
+	utils "me/gitpoc/utils"
+)
 	
-	)
-	
-func DeleteFile() {
+// TODO
+func GitDeleteFile(event *utils.RecordEvent) error{
+	return nil
 }

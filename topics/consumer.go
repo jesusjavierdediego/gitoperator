@@ -6,9 +6,9 @@ import (
 	"context"
 	"encoding/json"
 	kafka "github.com/segmentio/kafka-go"
+	mediator "me/gitpoc/mediator"
 	configuration "me/gitpoc/configuration"
 	utils "me/gitpoc/utils"
-	mediator "me/gitpoc/mediator"
 )
 
 const componentConsumerMessage = "Topics Consumer Service"
@@ -29,11 +29,11 @@ func getKafkaReader() *kafka.Reader {
 }
 
 
-func StartListening() error{
+func StartListening(){
 	methodMsg := "StartListening"
 	reader := getKafkaReader()
 	defer reader.Close()
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "Start consuming ... !!")
+	//utils.PrintLogInfo(componentConsumerMessage, methodMsg, "Start consuming ... !!")
 	for {
 		m, err := reader.ReadMessage(context.Background())
 		if err != nil {
@@ -44,9 +44,11 @@ func StartListening() error{
 		event, eventErr := convertMessageToProcessable(m)
 		if eventErr != nil {
 			utils.PrintLogError(eventErr, componentConsumerMessage, methodMsg, fmt.Sprintf("Message convertion error - Key '%s'", m.Key))
+			// send alert about not valid request
+		} else {
+			utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
+			mediator.ProcessIncomingMessage(event)
 		}
-		utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
-		mediator.ProcessIncomingMessage(event)
 	}
 }
 
@@ -58,5 +60,8 @@ func convertMessageToProcessable(msg kafka.Message) (utils.RecordEvent, error){
 		utils.PrintLogError(unmarshalErr, componentConsumerMessage, methodMsg, fmt.Sprintf("Error unmarshaling message content to JSON - Key '%s'", msg.Key))
 		return newRecordEvent, unmarshalErr
 	}
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("ID '%s'", newRecordEvent.Id))
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("Group '%s'", newRecordEvent.Group))
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("OperationType '%s'", newRecordEvent.OperationType))
 	return newRecordEvent, nil
 }

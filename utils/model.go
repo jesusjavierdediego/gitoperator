@@ -6,8 +6,10 @@ type RecordEvent struct {
 	Unit string `json:"unit"` // Unit mapped to Git repo
 	OperationType string `json:"operation_type"` // Values: (new | update | delete)
 	SendingTime int64 `json:"sending_time"` // Time of sending by the client
-	ReceptionTime int64 `json:"reception_time"` // Time of processing by the API
+	ReceptionTime int64 `json:"reception_time"` // Time of the reception by the API
+	ProcessingTime int64 `json:"processing_time"` // Time of processing by the Git Operator
 	Priority string `json:"priority"`  // API can qualify an event with a priority to be considered in concurrent writing decisions (HIGH | MEDIUM | LOW)
-	Message string `json:"message"`
+	Message string `json:"message"`// Commit message with SENDER (user) and REASONS 
 	RecordContent string `json:"record_content"` // empty if op OperationType == delete | update
+	Status string `json:"status"` // PENDING | NOTVALID | INCOMPLETE | COMPLETE
 }

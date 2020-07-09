@@ -32,7 +32,7 @@ func SendMessageToTopic(msg string) {
 
 	err := kafkaWriter.WriteMessages(context.Background(), topicContent)
 	if err != nil {
-		utils.PrintLogError(err, componentProducerMessage, methodMsg, "")
+		utils.PrintLogError(err, componentProducerMessage, methodMsg, "Error writing message to topic")
 	}
 	utils.PrintLogInfo(componentProducerMessage, methodMsg, "Message sent to topic successfully")
 }

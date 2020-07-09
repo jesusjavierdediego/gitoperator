@@ -2,15 +2,37 @@ profile: integration
 
 kafka:
   bootstrapserver: "localhost:9094"
-  Groupid: mygroup
-  Sessiontimeout: 5000
-  Eventschannelenabled: true  
-  Rebalanceenabled: true
-  Partitioneofenabled: true
+  groupid: GitOperatorCG
+  sessiontimeout: 5000
+  eventschannelenabled: true  
+  rebalanceenabled: true
+  partitioneofenabled: true
   autooffset: earliest
-  consumertopic: incoming_git
-  gitactionbacktopic: outgoing_git
+  consumertopic: gitoperator-in
+  gitactionbacktopic: gitoperator-out
   alerttopic: outgoing_alert
   messageminsize: 10e3
   messagemaxsize: 10e6
+
+units:
+  - name: UsFirst
+    alias: test
+    repo: GoNoSQL_1
+  - name: UKBusiness
+    alias: english
+    repo: GoNoSQL_2
+
+gitserver:
+  localbasicpath: "/home/administrator/go/src/me/gitpoc/"
+  url: "localhost:3000"
+  authtoken: ""
+  username: jdediego
+  password: "Turing_326"
+  email: "jesus.dediego.erles@gmail.com"
+
+
+
+    
   
+
+

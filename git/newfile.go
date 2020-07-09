@@ -1,99 +1,152 @@
 package git
 
 import (
-"fmt"
-"time"
-"os"
-"bytes"
-"encoding/json"
-"path/filepath"
-"io/ioutil"
-"gopkg.in/src-d/go-git.v4"
-"gopkg.in/src-d/go-git.v4/plumbing/object"
-. "gopkg.in/src-d/go-git.v4/_examples"
-"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
+	"time"
+	"os"
+	"bytes"
+	"errors"
+	"encoding/json"
+	"path/filepath"
+	"io/ioutil"
+	"gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
+	utils "me/gitpoc/utils"
+	configuration "me/gitpoc/configuration"
 )
+
+const componentConsumerMessage = "Git New File Processor"
+var config = configuration.GlobalConfiguration
 
 // This example receives a new file to be added to git
 // - Add
 // - commit
 // - push
-func NewFile(local_repo_path string, file_name string, content string) {
-	r, err := git.PlainOpen(local_repo_path)
-	CheckIfError(err)
+func GitProcessNewFile(event *utils.RecordEvent) error{
+	var methodMsg = "ProcessNewFile"
+	var repoPath = ""
+	var fileName = event.Id + ".json"
+
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "HERE")
+
+	for _, unit := range config.Units {
+        if unit.Name == event.Unit {
+            repoPath = config.Gitserver.Localbasicpath + unit.Repo 
+        }
+	}
+	if !(len(repoPath) > 0) {
+		utils.PrintLogError(nil, componentConsumerMessage, methodMsg, "Not found match with Unit in event in configuration - event.Unit: " + event.Unit)
+		return errors.New("Not found match with Unit in event in configuration - event.Unit: " + event.Unit)
+	}
+
+	var completeFileName = event.Group + "/" + fileName
+
+	r, err := git.PlainOpen(repoPath)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error opening local Git repository: " + repoPath)
+		return err
+	}
 
 	w, err := r.Worktree()
-	CheckIfError(err)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error getting Worktree in local Git repository: " + repoPath)
+		return err
+	}
 
 
-	// ... we need a file to commit so let's create a new file inside of the
+	// We need a file to commit so let's create a new file inside of the
 	// worktree of the project using the go standard library.
-	Info("filename: " + file_name)
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "File to process: " + completeFileName)
 	var prettyJSON bytes.Buffer
-    jsonErr := json.Indent(&prettyJSON, []byte(content), "", "\t")
-	CheckIfError(jsonErr)
+    jsonErr := json.Indent(&prettyJSON, []byte(event.RecordContent), "", "\t")
+	if jsonErr != nil {
+		utils.PrintLogError(jsonErr, componentConsumerMessage, methodMsg, "Error in JSON pretty printing")
+		return jsonErr
+	}
 	// TODO check if the file actually exists
-	filename := filepath.Join(local_repo_path, file_name)
-	err = ioutil.WriteFile(filename, prettyJSON.Bytes(), 0644)
-	CheckIfError(err)
+	filePathAndName := filepath.Join(repoPath, completeFileName)
+	err = ioutil.WriteFile(filePathAndName, prettyJSON.Bytes(), 0644)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error writing to local file: " + filePathAndName)
+		return err
+	}
 
 
 	//PULL FIRST
-	Info("git pull origin")
 	w.Pull(&git.PullOptions{RemoteName: "origin"})
 	// Print the latest commit that was just pulled
 	ref, err := r.Head()
-	CheckIfError(err)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error getting HEAD reference")
+		return err
+	}
 	commitPull, err := r.CommitObject(ref.Hash())
-	CheckIfError(err)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in commit - Ref Hash: " + ref.Hash().String())
+		return err
+	}
 
-	fmt.Println(commitPull)
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, commitPull.String())
 
 
 
 
-	Info("git add sample file")
-	_, err = w.Add(file_name)
-	CheckIfError(err)
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg,"git add file")
+	_, err = w.Add(completeFileName)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in add - File: " + completeFileName)
+		return err
+	}
 
-	Info("git status --porcelain")
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg,"git status --porcelain")
 	status, err := w.Status()
-	CheckIfError(err)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error getting status in local repo")
+		return err
+	}
 
-	fmt.Println(status)
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, status.String())
 
 
 
-	// Commits the current staging area to the repository, with the new file
-	// just created. We should provide the object.Signature of Author of the
-	// commit.
-	var msg = "Added file " + file_name 
-	Info("git commit -m \"" + msg + "\"")
-	commit, err := w.Commit(msg, &git.CommitOptions{
+	// Commits the current staging area to the repository, with the new file just created.
+	// We should provide the object.Signature of Author of the commit.
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git commit -m \"" + event.Message + "\"")
+	commit, err := w.Commit(event.Message, &git.CommitOptions{
 		Author: &object.Signature{
-			Name:  "Jesus de Diego",
-			Email: "jesus.dediego.erles@gmail.com",
+			Name:  config.Gitserver.Username,
+			Email: config.Gitserver.Email,
 			When:  time.Now(),
 		},
 	})
-	CheckIfError(err)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in commit - Message: " + event.Message)
+		return err
+	}
 
 
 	// Prints the current HEAD to verify that all worked well.
-	Info("git show -s")
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git show -s")
 	obj, err := r.CommitObject(commit)
-	CheckIfError(err)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in showing commit for verification")
+		return err
+	}
 
-	fmt.Println(obj)
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, obj.String())
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git push")
 
-	Info("git push")
 	// push using default options
 	err = r.Push(&git.PushOptions{
 		Auth: &http.BasicAuth{
-			Username: "jdediego",
-			Password: "Turing_326",
+			Username: config.Gitserver.Username,
+			Password: config.Gitserver.Password,
 		},
 		Progress: os.Stdout,
 	})
-	CheckIfError(err)
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in push")
+		return err
+	}
+	return nil
 }

@@ -12,9 +12,25 @@ var GlobalConfiguration Configuration
 
 type Configuration struct {
 	Profile        string
+	Units		   []unit
+	Gitserver      gitserver
 	Kafka          kafka
 }
 
+type unit struct {
+	Name string
+	Alias string
+	Repo string
+}
+
+type gitserver struct {
+	Localbasicpath string
+	Url string
+	Authtoken string
+	Username string
+	Password string
+	Email string
+}
 type kafka struct {
 	Bootstrapserver string
 	Groupid string
