@@ -1,18 +1,21 @@
 package topics
 
 import (
-	"fmt"
-	"strings"
 	"context"
 	"encoding/json"
+	"fmt"
+	configuration "me/gitoperator/configuration"
+	mediator "me/gitoperator/mediator"
+	utils "me/gitoperator/utils"
+	"strings"
+
 	kafka "github.com/segmentio/kafka-go"
-	mediator "me/gitpoc/mediator"
-	configuration "me/gitpoc/configuration"
-	utils "me/gitpoc/utils"
 )
 
 const componentConsumerMessage = "Topics Consumer Service"
+
 var config = configuration.GlobalConfiguration
+//var eventsQueue []utils.RecordEvent
 
 func getKafkaReader() *kafka.Reader {
 	broker := config.Kafka.Bootstrapserver
@@ -28,8 +31,7 @@ func getKafkaReader() *kafka.Reader {
 	})
 }
 
-
-func StartListening(){
+func StartListening() {
 	methodMsg := "StartListening"
 	reader := getKafkaReader()
 	defer reader.Close()
@@ -47,12 +49,14 @@ func StartListening(){
 			// send alert about not valid request
 		} else {
 			utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
-			mediator.ProcessIncomingMessage(event)
+			mediator.ProcessIncomingMessage(&event)
+			//eventsQueue = append(eventsQueue, event)
 		}
 	}
 }
 
-func convertMessageToProcessable(msg kafka.Message) (utils.RecordEvent, error){
+
+func convertMessageToProcessable(msg kafka.Message) (utils.RecordEvent, error) {
 	methodMsg := "convertMessageToProcessable"
 	var newRecordEvent utils.RecordEvent
 	unmarshalErr := json.Unmarshal(msg.Value, &newRecordEvent)
@@ -65,3 +69,15 @@ func convertMessageToProcessable(msg kafka.Message) (utils.RecordEvent, error){
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("OperationType '%s'", newRecordEvent.OperationType))
 	return newRecordEvent, nil
 }
+
+/* func startScheduledTasks(){
+	methodMessage := "startScheduledTasks"
+	for true {
+		time.Sleep(time.Duration(100) * time.Millisecond)
+		if len(eventsQueue) > 0 {
+			utils.PrintLogInfo(componentConsumerMessage, methodMessage, "Running scheduled sending")
+			mediator.ProcessIncomingMessages(&eventsQueue)
+			eventsQueue = make([]utils.RecordEvent, 0)
+		}
+	}
+} */

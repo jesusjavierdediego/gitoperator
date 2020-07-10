@@ -26,7 +26,5 @@ func TestConfiguration(t *testing.T) {
 		conf := GlobalConfiguration
 
 		So(conf, ShouldNotBeNil)
-		So(conf.GrpcServer.Name, ShouldEqual, "STSIDManager")
-		So(len(conf.Pki.Cafileprefix), ShouldBeGreaterThan, 0)
 	})
 }

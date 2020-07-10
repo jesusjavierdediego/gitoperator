@@ -2,9 +2,10 @@ package topics
 
 import (
 	"context"
+	utils "me/gitoperator/utils"
+
 	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
-	utils "me/gitpoc/utils"
 )
 
 const componentProducerMessage = "Topics Producer Service"

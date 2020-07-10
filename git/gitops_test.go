@@ -1,9 +1,10 @@
 package git
 
 import (
+	utils "me/gitoperator/utils"
 	"testing"
+
 	. "github.com/smartystreets/goconvey/convey"
-	utils "me/gitpoc/utils"
 )
 
 /*
@@ -11,7 +12,7 @@ import (
 	Content of record is well-formed && valid && minified JSON
 */
 
-func getNewRecordEventLevel0() utils.RecordEvent{
+func getNewRecordEventLevel0() utils.RecordEvent {
 	var id = "personalrecord11"
 	var newRecordEvent utils.RecordEvent
 	newRecordEvent.Id = id
@@ -27,8 +28,7 @@ func getNewRecordEventLevel0() utils.RecordEvent{
 	return newRecordEvent
 }
 
-
-func getNewRecordEventLevel1() utils.RecordEvent{
+func getNewRecordEventLevel1() utils.RecordEvent {
 	var id = "personalrecord01"
 	var newRecordEvent utils.RecordEvent
 	newRecordEvent.Id = id
@@ -44,7 +44,7 @@ func getNewRecordEventLevel1() utils.RecordEvent{
 	return newRecordEvent
 }
 
-func getExistingRecordEventLevel0() utils.RecordEvent{
+func getExistingRecordEventLevel0() utils.RecordEvent {
 	var updateRecordEvent utils.RecordEvent
 	var id = "personalrecord11"
 	updateRecordEvent.Id = id
@@ -60,7 +60,7 @@ func getExistingRecordEventLevel0() utils.RecordEvent{
 	return updateRecordEvent
 }
 
-func getExistingRecordEventLevel1() utils.RecordEvent{
+func getExistingRecordEventLevel1() utils.RecordEvent {
 	var updateRecordEvent utils.RecordEvent
 	var id = "personalrecord01"
 	updateRecordEvent.Id = id
@@ -75,8 +75,6 @@ func getExistingRecordEventLevel1() utils.RecordEvent{
 	updateRecordEvent.RecordContent = `{"name": "John", "age": 32, "city": "Cincinatti"}`
 	return updateRecordEvent
 }
-
-
 
 func TestNewFile(t *testing.T) {
 	/* Convey("Creating new file in Git level 0", t, func() {

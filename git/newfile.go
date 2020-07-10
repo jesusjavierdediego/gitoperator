@@ -1,28 +1,30 @@
 package git
 
 import (
-	"time"
-	"os"
 	"bytes"
-	"errors"
 	"encoding/json"
-	"path/filepath"
+	"errors"
 	"io/ioutil"
+	configuration "me/gitoperator/configuration"
+	utils "me/gitoperator/utils"
+	"os"
+	"path/filepath"
+	"time"
+
 	"gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
-	utils "me/gitpoc/utils"
-	configuration "me/gitpoc/configuration"
 )
 
 const componentConsumerMessage = "Git New File Processor"
+
 var config = configuration.GlobalConfiguration
 
 // This example receives a new file to be added to git
 // - Add
 // - commit
 // - push
-func GitProcessNewFile(event *utils.RecordEvent) error{
+func GitProcessNewFile(event *utils.RecordEvent) error {
 	var methodMsg = "ProcessNewFile"
 	var repoPath = ""
 	var fileName = event.Id + ".json"
@@ -30,12 +32,12 @@ func GitProcessNewFile(event *utils.RecordEvent) error{
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "HERE")
 
 	for _, unit := range config.Units {
-        if unit.Name == event.Unit {
-            repoPath = config.Gitserver.Localbasicpath + unit.Repo 
-        }
+		if unit.Name == event.Unit {
+			repoPath = config.Gitserver.Localbasicpath + unit.Repo
+		}
 	}
 	if !(len(repoPath) > 0) {
-		utils.PrintLogError(nil, componentConsumerMessage, methodMsg, "Not found match with Unit in event in configuration - event.Unit: " + event.Unit)
+		utils.PrintLogError(nil, componentConsumerMessage, methodMsg, "Not found match with Unit in event in configuration - event.Unit: "+event.Unit)
 		return errors.New("Not found match with Unit in event in configuration - event.Unit: " + event.Unit)
 	}
 
@@ -43,22 +45,21 @@ func GitProcessNewFile(event *utils.RecordEvent) error{
 
 	r, err := git.PlainOpen(repoPath)
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error opening local Git repository: " + repoPath)
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error opening local Git repository: "+repoPath)
 		return err
 	}
 
 	w, err := r.Worktree()
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error getting Worktree in local Git repository: " + repoPath)
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error getting Worktree in local Git repository: "+repoPath)
 		return err
 	}
 
-
 	// We need a file to commit so let's create a new file inside of the
 	// worktree of the project using the go standard library.
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "File to process: " + completeFileName)
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "File to process: "+completeFileName)
 	var prettyJSON bytes.Buffer
-    jsonErr := json.Indent(&prettyJSON, []byte(event.RecordContent), "", "\t")
+	jsonErr := json.Indent(&prettyJSON, []byte(event.RecordContent), "", "\t")
 	if jsonErr != nil {
 		utils.PrintLogError(jsonErr, componentConsumerMessage, methodMsg, "Error in JSON pretty printing")
 		return jsonErr
@@ -67,10 +68,9 @@ func GitProcessNewFile(event *utils.RecordEvent) error{
 	filePathAndName := filepath.Join(repoPath, completeFileName)
 	err = ioutil.WriteFile(filePathAndName, prettyJSON.Bytes(), 0644)
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error writing to local file: " + filePathAndName)
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error writing to local file: "+filePathAndName)
 		return err
 	}
-
 
 	//PULL FIRST
 	w.Pull(&git.PullOptions{RemoteName: "origin"})
@@ -82,23 +82,20 @@ func GitProcessNewFile(event *utils.RecordEvent) error{
 	}
 	commitPull, err := r.CommitObject(ref.Hash())
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in commit - Ref Hash: " + ref.Hash().String())
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in commit - Ref Hash: "+ref.Hash().String())
 		return err
 	}
 
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, commitPull.String())
 
-
-
-
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg,"git add file")
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git add file")
 	_, err = w.Add(completeFileName)
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in add - File: " + completeFileName)
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in add - File: "+completeFileName)
 		return err
 	}
 
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg,"git status --porcelain")
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git status --porcelain")
 	status, err := w.Status()
 	if err != nil {
 		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error getting status in local repo")
@@ -107,11 +104,9 @@ func GitProcessNewFile(event *utils.RecordEvent) error{
 
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, status.String())
 
-
-
 	// Commits the current staging area to the repository, with the new file just created.
 	// We should provide the object.Signature of Author of the commit.
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git commit -m \"" + event.Message + "\"")
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git commit -m \""+event.Message+"\"")
 	commit, err := w.Commit(event.Message, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  config.Gitserver.Username,
@@ -120,10 +115,9 @@ func GitProcessNewFile(event *utils.RecordEvent) error{
 		},
 	})
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in commit - Message: " + event.Message)
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in commit - Message: "+event.Message)
 		return err
 	}
-
 
 	// Prints the current HEAD to verify that all worked well.
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git show -s")

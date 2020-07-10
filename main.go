@@ -1,16 +1,15 @@
 package main
 
 import (
-	topics "me/gitpoc/topics"
-	utils "me/gitpoc/utils"
-	configuration "me/gitpoc/configuration"
+	configuration "me/gitoperator/configuration"
+	topics "me/gitoperator/topics"
+	utils "me/gitoperator/utils"
 )
-
+const componentMessage = "Main process"
 var config = configuration.GlobalConfiguration
 
 func main() {
-	
-	const componentMessage = "Main process"
-	utils.PrintLogInfo("GitPoc", componentMessage, "Start listening topic " + config.Kafka.Consumertopic)
+	utils.PrintLogInfo("GitPoc", componentMessage, "Start listening topic "+config.Kafka.Consumertopic)
 	topics.StartListening()
 }
+

@@ -2,9 +2,10 @@ package utils
 
 import (
 	"fmt"
+	config "me/gitoperator/configuration"
 	"time"
+
 	logger "github.com/sirupsen/logrus"
-	config "me/gitpoc/configuration"
 )
 
 var Configuration config.Configuration
@@ -12,15 +13,15 @@ var Configuration config.Configuration
 func getFormattedNow() string {
 	t := time.Now()
 	formatted := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d",
-        t.Year(), t.Month(), t.Day(),
+		t.Year(), t.Month(), t.Day(),
 		t.Hour(), t.Minute(), t.Second())
 	return formatted
 }
 
 func PrintLogError(err error, comp string, phase string, errorMessage string) bool {
 	logger.WithFields(logger.Fields{
-		"Time": getFormattedNow(),
-		"Component":   comp,
+		"Time":      getFormattedNow(),
+		"Component": comp,
 		"Phase":     phase,
 		"Error":     err,
 	}).Error(errorMessage)
@@ -29,8 +30,8 @@ func PrintLogError(err error, comp string, phase string, errorMessage string) bo
 
 func PrintLogWarn(err error, comp string, phase string, errorMessage string) bool {
 	logger.WithFields(logger.Fields{
-		"Time": getFormattedNow(),
-		"Component":   comp,
+		"Time":      getFormattedNow(),
+		"Component": comp,
 		"Phase":     phase,
 		"Error":     err,
 	}).Warn(errorMessage)
@@ -39,9 +40,9 @@ func PrintLogWarn(err error, comp string, phase string, errorMessage string) boo
 
 func PrintLogInfo(comp string, phase string, message string) bool {
 	logger.WithFields(logger.Fields{
-		"Time": getFormattedNow(),
+		"Time":      getFormattedNow(),
 		"Component": comp,
-		"Phase":   phase,
+		"Phase":     phase,
 	}).Info(message)
 	return true
 }

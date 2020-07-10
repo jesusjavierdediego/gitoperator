@@ -23,7 +23,8 @@ units:
     repo: GoNoSQL_2
 
 gitserver:
-  localbasicpath: "/home/administrator/go/src/me/gitpoc/"
+  #localbasicpath: "/home/administrator/go/src/me/gitpoc/"
+  localbasicpath: "/Users/administrator/workspace/projects/go/src/me/gitoperator/"
   url: "localhost:3000"
   authtoken: ""
   username: jdediego
