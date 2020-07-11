@@ -2,13 +2,14 @@ package topics
 
 import (
 	"context"
-	utils "me/gitoperator/utils"
-
 	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
+	utils "me/gitoperator/utils"
+	configuration "me/gitoperator/configuration"
 )
 
 const componentProducerMessage = "Topics Producer Service"
+var config = configuration.GlobalConfiguration
 
 func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	return kafka.NewWriter(kafka.WriterConfig{

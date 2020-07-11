@@ -15,6 +15,7 @@ type Configuration struct {
 	Units		   []unit
 	Gitserver      gitserver
 	Kafka          kafka
+	Microbatchfrequency int
 }
 
 type unit struct {

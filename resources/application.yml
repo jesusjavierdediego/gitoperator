@@ -1,5 +1,7 @@
 profile: integration
 
+Microbatchfrequency: 100 # milliseconds
+
 kafka:
   bootstrapserver: "localhost:9094"
   groupid: GitOperatorCG

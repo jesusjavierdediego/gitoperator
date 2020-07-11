@@ -4,18 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	configuration "me/gitoperator/configuration"
 	mediator "me/gitoperator/mediator"
 	utils "me/gitoperator/utils"
-	"strings"
-
 	kafka "github.com/segmentio/kafka-go"
 )
 
-const componentConsumerMessage = "Topics Consumer Service"
+const componentMessage = "Topics Consumer Service"
 
 var config = configuration.GlobalConfiguration
-//var eventsQueue []utils.RecordEvent
+//var EventsQueue []utils.RecordEvent
 
 func getKafkaReader() *kafka.Reader {
 	broker := config.Kafka.Bootstrapserver
@@ -35,22 +34,22 @@ func StartListening() {
 	methodMsg := "StartListening"
 	reader := getKafkaReader()
 	defer reader.Close()
-	//utils.PrintLogInfo(componentConsumerMessage, methodMsg, "Start consuming ... !!")
+	//utils.PrintLogInfo(componentMessage, methodMsg, "Start consuming ... !!")
 	for {
 		m, err := reader.ReadMessage(context.Background())
 		if err != nil {
-			utils.PrintLogError(err, componentConsumerMessage, methodMsg, "")
+			utils.PrintLogError(err, componentMessage, methodMsg, "")
 		}
 		msg := fmt.Sprintf("Message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-		utils.PrintLogInfo(componentConsumerMessage, methodMsg, msg)
+		utils.PrintLogInfo(componentMessage, methodMsg, msg)
 		event, eventErr := convertMessageToProcessable(m)
 		if eventErr != nil {
-			utils.PrintLogError(eventErr, componentConsumerMessage, methodMsg, fmt.Sprintf("Message convertion error - Key '%s'", m.Key))
+			utils.PrintLogError(eventErr, componentMessage, methodMsg, fmt.Sprintf("Message convertion error - Key '%s'", m.Key))
 			// send alert about not valid request
 		} else {
-			utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
+			utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
 			mediator.ProcessIncomingMessage(&event)
-			//eventsQueue = append(eventsQueue, event)
+			//EventsQueue = append(EventsQueue, event)
 		}
 	}
 }
@@ -61,12 +60,12 @@ func convertMessageToProcessable(msg kafka.Message) (utils.RecordEvent, error) {
 	var newRecordEvent utils.RecordEvent
 	unmarshalErr := json.Unmarshal(msg.Value, &newRecordEvent)
 	if unmarshalErr != nil {
-		utils.PrintLogError(unmarshalErr, componentConsumerMessage, methodMsg, fmt.Sprintf("Error unmarshaling message content to JSON - Key '%s'", msg.Key))
+		utils.PrintLogError(unmarshalErr, componentMessage, methodMsg, fmt.Sprintf("Error unmarshaling message content to JSON - Key '%s'", msg.Key))
 		return newRecordEvent, unmarshalErr
 	}
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("ID '%s'", newRecordEvent.Id))
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("Group '%s'", newRecordEvent.Group))
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, fmt.Sprintf("OperationType '%s'", newRecordEvent.OperationType))
+	utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("ID '%s'", newRecordEvent.Id))
+	utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("Group '%s'", newRecordEvent.Group))
+	utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("OperationType '%s'", newRecordEvent.OperationType))
 	return newRecordEvent, nil
 }
 
@@ -75,7 +74,7 @@ func convertMessageToProcessable(msg kafka.Message) (utils.RecordEvent, error) {
 	for true {
 		time.Sleep(time.Duration(100) * time.Millisecond)
 		if len(eventsQueue) > 0 {
-			utils.PrintLogInfo(componentConsumerMessage, methodMessage, "Running scheduled sending")
+			utils.PrintLogInfo(componentMessage, methodMessage, "Running scheduled sending")
 			mediator.ProcessIncomingMessages(&eventsQueue)
 			eventsQueue = make([]utils.RecordEvent, 0)
 		}

@@ -1,11 +1,11 @@
 package mediator
 
 import (
+	"sync"
 	"encoding/json"
 	git "me/gitoperator/git"
 	utils "me/gitoperator/utils"
-	"sync"
-	//topics "me/gitoperator/topics"
+	topicsender "me/gitoperator/topicsender"
 )
 
 const componentMessage = "Processor"
@@ -60,6 +60,22 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 	}
 }  */
 
+/* func ProcessMicroBatch(events []utils.RecordEvent) {
+	methodMessage := "ProcessMicroBatch"
+	for _, event := range events {
+		utils.PrintLogInfo(componentMessage, methodMessage, "Record eevent received - Operation: "+event.OperationType)
+		switch event.OperationType {
+			case "new":
+				go git.GitProcessNewFile(&event)
+			case "update":
+				go git.GitUpdateFile(&event)
+			case "delete":
+				go git.GitDeleteFile(&event)
+		}
+	}
+} */
+
+
 func ProcessIncomingMessage(event *utils.RecordEvent) {
 	var w sync.WaitGroup
 	var m sync.Mutex
@@ -70,6 +86,7 @@ func ProcessIncomingMessage(event *utils.RecordEvent) {
 
 func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordEvent) {
 	methodMessage := "synchronizedProcess"
+	
 	m.Lock()
 	var gitErr error
 	utils.PrintLogInfo(componentMessage, methodMessage, "event.OperationType: "+event.OperationType)
@@ -82,9 +99,6 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 			gitErr = git.GitDeleteFile(event)
 	}
 
-	m.Unlock()
-	wg.Done()
-
 	if gitErr != nil {
 		utils.PrintLogError(gitErr, componentMessage, methodMessage, "Error processing in Git server - ID: "+event.Id)
 		return
@@ -96,6 +110,14 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 		utils.PrintLogError(marshalErr, componentMessage, methodMessage, "Error parsing response event- ID: "+event.Id)
 		return
 	}
-	utils.PrintLogInfo(componentMessage, methodMessage, "Event processed successfully - ID: "+event.Id)
-	//topics.SendMessageToTopic(msg)
+	
+	msgBytes, err := json.Marshal(event)
+    if err != nil {
+		utils.PrintLogError(marshalErr, componentMessage, methodMessage, "Error serializing response event - ID: "+event.Id)
+	}
+	// Once the git event has been processes properly is sent to the topic to update the RDB
+	topicsender.SendMessageToTopic(string(msgBytes))
+	utils.PrintLogInfo(componentMessage, methodMessage, "Event processed nad returned as response event successfully - ID: "+event.Id)
+	m.Unlock()
+	wg.Done()
 }
