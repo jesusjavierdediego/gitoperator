@@ -1,6 +1,7 @@
 package topics
 
 import (
+	"time"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -12,9 +13,44 @@ import (
 )
 
 const componentMessage = "Topics Consumer Service"
-
 var config = configuration.GlobalConfiguration
-//var EventsQueue []utils.RecordEvent
+
+func getBatchReader() *kafka.Batch {
+	partition := 0
+	conn, connErr := kafka.DialLeader(context.Background(), "tcp", config.Kafka.Bootstrapserver, config.Kafka.Consumertopic, partition)
+	if connErr != nil {
+		// TODO
+	}
+	conn.SetReadDeadline(time.Now().Add(10*time.Second))
+	return conn.ReadBatch(10e3, 1e6) // fetch 10KB min, 1MB max
+}
+
+func StartListeningBatches() {
+	methodMsg := "StartListeningBatches"
+	batchReader := getBatchReader()
+	//m := make([]byte, 10e3)
+	defer batchReader.Close()
+	utils.PrintLogInfo(componentMessage, methodMsg, "Start consuming batches ... !!")
+	//Iterate messages in the batch and classify. Then, send to the mediator in classified groups:
+	// mediator.ProcessNewFiles | mediator.ProcessUpdatesFile | mediator.ProcessUpdatesDifferentFiles | mediator.ProcessDeletions
+	for {
+		m, err := batchReader.ReadMessage()
+		if err != nil {
+			utils.PrintLogError(err, componentMessage, methodMsg, "Reached end of batch")
+			break
+		}
+		msg := fmt.Sprintf("Message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
+		utils.PrintLogInfo(componentMessage, methodMsg, msg)
+		event, eventErr := convertMessageToProcessable(m)
+		if eventErr != nil {
+			utils.PrintLogError(eventErr, componentMessage, methodMsg, fmt.Sprintf("Message convertion error - Key '%s'", m.Key))
+			// send alert about not valid request
+		} else {
+			utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
+			mediator.ProcessIncomingMessage(&event)
+		}
+	}
+}
 
 func getKafkaReader() *kafka.Reader {
 	broker := config.Kafka.Bootstrapserver
@@ -68,15 +104,3 @@ func convertMessageToProcessable(msg kafka.Message) (utils.RecordEvent, error) {
 	utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("OperationType '%s'", newRecordEvent.OperationType))
 	return newRecordEvent, nil
 }
-
-/* func startScheduledTasks(){
-	methodMessage := "startScheduledTasks"
-	for true {
-		time.Sleep(time.Duration(100) * time.Millisecond)
-		if len(eventsQueue) > 0 {
-			utils.PrintLogInfo(componentMessage, methodMessage, "Running scheduled sending")
-			mediator.ProcessIncomingMessages(&eventsQueue)
-			eventsQueue = make([]utils.RecordEvent, 0)
-		}
-	}
-} */
