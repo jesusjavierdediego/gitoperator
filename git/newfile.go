@@ -31,6 +31,8 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 	var methodMsg = "ProcessNewFile"
 	var repoPath = ""
 	var fileName = event.Id + ".json"
+
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "GIT NEW FILE1")
 	
 	for _, unit := range config.Units {
 		if unit.Name == event.Unit {

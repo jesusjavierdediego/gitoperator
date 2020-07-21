@@ -5,14 +5,18 @@ import (
 	configuration "me/gitoperator/configuration"
 	topicconsumer "me/gitoperator/topicconsumer"
 	//mediator "me/gitoperator/mediator"
-	utils "me/gitoperator/utils"
+	//utils "me/gitoperator/utils"
 )
 const componentMessage = "Main process"
 var config = configuration.GlobalConfiguration
 
 func main() {
-	utils.PrintLogInfo("GitPoc", componentMessage, "Start listening topic "+config.Kafka.Consumertopic)
-	topicconsumer.StartListening()
+	//utils.PrintLogInfo("GitPoc", componentMessage, "Start listening topic "+config.Kafka.Consumertopic)
+	//topicconsumer.StartListening()
+	topicconsumer.StartListeningBatches()
+/* 	if err != nil {
+		utils.PrintLogError(err, componentMessage, "Main", "Main function failed")
+	} */
 }
 
 /* func startScheduledTasks(c configuration.Configuration){
