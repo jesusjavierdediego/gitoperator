@@ -1,7 +1,6 @@
 package topics
 
 import (
-	//"bytes"
 	"time"
 	"context"
 	"encoding/json"
@@ -29,33 +28,34 @@ func getBatchReader() (*kafka.Batch, error) {
 
 func StartListeningBatches() error{
 	methodMsg := "StartListeningBatches"
-	batchReader, readerErr := getBatchReader()
+	batch, readerErr := getBatchReader()
 	if readerErr != nil {
 		utils.PrintLogError(readerErr, componentMessage, methodMsg, "Error connecting to Kafka cluster")
 		return readerErr
 	}
-	//m := make([]byte, 10e3)
-	defer batchReader.Close()
-	//b := make([]byte, 1e3) // 10KB max per message
-	//Iterate messages in the batch and classify. Then, send to the mediator in classified groups:
-	// mediator.ProcessNewFiles | mediator.ProcessUpdatesFile | mediator.ProcessUpdatesDifferentFiles | mediator.ProcessDeletions
+	defer batch.Close()
+
 	for {
-		m, readErr := batchReader.ReadMessage()
+		//Iterate the btach, store all messages in a slice, send to classify and process
+		m, readErr := batch.ReadMessage()
 		if readErr != nil {
-			utils.PrintLogError(readErr, componentMessage, methodMsg, "Error reading message")
+			utils.PrintLogError(readErr, componentMessage, methodMsg, "EOB")
+			batch.Close()
 		}
 		msg := fmt.Sprintf("Message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		utils.PrintLogInfo(componentMessage, methodMsg, msg)
 		event, eventErr := convertMessageToProcessable(m)
 		if eventErr != nil {
 			utils.PrintLogError(eventErr, componentMessage, methodMsg, fmt.Sprintf("Message convertion error - Key '%s'", m.Key))
+			return eventErr
 			// send alert about not valid request
-		} else {
-			utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
-			mediator.ProcessIncomingMessage(&event)
-			//EventsQueue = append(EventsQueue, event)
 		}
+		utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
+		mediator.ProcessIncomingMessage(&event)
+			//EventsQueue = append(EventsQueue, event)
+		
 		/*
+		m := make([]byte, 10e3)
 		_, err := batchReader.Read(b)
 		if err == nil {
 			m := string(b)
