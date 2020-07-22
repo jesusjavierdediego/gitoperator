@@ -13,3 +13,8 @@ type RecordEvent struct {
 	RecordContent string `json:"record_content"` // empty if op OperationType == delete | update
 	Status string `json:"status"` // PENDING | NOTVALID | INCOMPLETE | COMPLETE
 }
+
+type ClassiffiedEventsSet struct {
+	SyncEvents   []RecordEvent `json:"sync_events"`
+	ParEvents   []RecordEvent `json:"par_events"`
+}

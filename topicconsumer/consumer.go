@@ -1,6 +1,8 @@
 package topics
 
 import (
+	"errors"
+	"io"
 	"time"
 	"context"
 	"encoding/json"
@@ -26,6 +28,23 @@ func getBatchReader() (*kafka.Batch, error) {
 	return conn.ReadBatch(1024, 8192), nil
 }
 
+func classifier(event utils.RecordEvent) (string, error) {
+	if event.OperationType != "new" && event.OperationType != "update" && event.OperationType != "delete"{
+		return "", errors.New("Operation not valid: " + event.OperationType)
+	}
+	if event.OperationType == "new" {
+		return "par", nil
+	}
+	if event.OperationType == "update" || event.OperationType == "delete"{
+		if event.Priority == "HIGH" {
+			return "par", nil
+		} else {
+			return "sync", nil
+		}
+	}
+	return "", errors.New("Unexpected type: " + event.OperationType)
+}
+
 func StartListeningBatches() error{
 	methodMsg := "StartListeningBatches"
 	batch, readerErr := getBatchReader()
@@ -33,13 +52,14 @@ func StartListeningBatches() error{
 		utils.PrintLogError(readerErr, componentMessage, methodMsg, "Error connecting to Kafka cluster")
 		return readerErr
 	}
-	defer batch.Close()
-
+	var classifiedEvents utils.ClassiffiedEventsSet
+	var syncEvents []utils.RecordEvent
+	var parEvents []utils.RecordEvent
 	for {
 		//Iterate the btach, store all messages in a slice, send to classify and process
 		m, readErr := batch.ReadMessage()
-		if readErr != nil {
-			utils.PrintLogError(readErr, componentMessage, methodMsg, "EOB")
+		if readErr != nil && readErr == io.ErrUnexpectedEOF{
+			utils.PrintLogError(readErr, componentMessage, methodMsg, "End of Batch (EOB) reached")
 			batch.Close()
 		}
 		msg := fmt.Sprintf("Message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
@@ -51,31 +71,29 @@ func StartListeningBatches() error{
 			// send alert about not valid request
 		}
 		utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
-		mediator.ProcessIncomingMessage(&event)
-			//EventsQueue = append(EventsQueue, event)
-		
-		/*
-		m := make([]byte, 10e3)
-		_, err := batchReader.Read(b)
-		if err == nil {
-			m := string(b)
-			cleanM := strings.Replace(m, "\x00", "", -1)
-			if len(cleanM) > 0 {
-				var event utils.RecordEvent
-				//message := strings.Replace(m, "\\", "", -1)
-				fmt.Printf("%#v\n", cleanM)
-				utils.PrintLogInfo(componentMessage, methodMsg, cleanM)
-				if unmarshalErr := json.Unmarshal(b, &event); unmarshalErr != nil {
-					utils.PrintLogError(unmarshalErr, componentMessage, methodMsg, "Message convertion error")
-				} else {
-					utils.PrintLogInfo(componentMessage, methodMsg, "Message unmarshaled to event successfully - Event id: " + event.Id)
-					mediator.ProcessIncomingMessage(&event)
-				}
-			}
-		}*/
+		verdict, err := classifier(event)
+		if err != nil {
+			utils.PrintLogError(err, componentMessage, methodMsg, "Error applying classification to event")
+		}
+		switch verdict {
+			case "sync":
+				syncEvents = append(syncEvents, event)
+				utils.PrintLogInfo(componentMessage, methodMsg, "Classified as SYNC")
+			case "par":
+				parEvents = append(parEvents, event)
+				utils.PrintLogInfo(componentMessage, methodMsg, "Classified as PARALLEL")
+			default:
+				utils.PrintLogWarn(nil, componentMessage, methodMsg, "Classification unexpected")
+				
+		}
 	}
+	classifiedEvents.SyncEvents = syncEvents
+	classifiedEvents.ParEvents = parEvents
+
+	mediator.ProcessClassifiedSet(classifiedEvents)
 	return nil
 }
+
 
 func getKafkaReader() *kafka.Reader {
 	broker := config.Kafka.Bootstrapserver
@@ -110,7 +128,7 @@ func StartListening() {
 			// send alert about not valid request
 		} else {
 			utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
-			mediator.ProcessIncomingMessage(&event)
+			mediator.ProcessSyncIncomingMessage(&event)
 			//EventsQueue = append(EventsQueue, event)
 		}
 	}
