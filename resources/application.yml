@@ -3,7 +3,7 @@ profile: integration
 Microbatchfrequency: 100 # milliseconds
 
 kafka:
-  bootstrapserver: "localhost:9092"
+  bootstrapserver: "localhost:9094"
   groupid: GitOperatorCG
   sessiontimeout: 5000
   eventschannelenabled: true  
@@ -16,18 +16,26 @@ kafka:
   messageminsize: 10e3
   messagemaxsize: 10e6
 
-units:
-  - name: UsFirst
+# Map of DB Owner/repository
+dbowners:
+  - dbname: USFirst
     alias: test
-    repo: GoNoSQL_1
-  - name: UKBusiness
+    repo: US
+  - dbname: UKFirst
     alias: english
-    repo: GoNoSQL_2
+    repo: UK
+  - dbname: EUFirst
+    alias: english
+    repo: EU
+  - dbname: GoNoSQL_1
+    alias: english
+    repo: GoNoSQL_1
+
+localgitbasicpath: "/Users/administrator/workspace/projects/go/src/me/gitoperator/"
+  #basicpath: "/home/administrator/go/src/me/gitpoc/"
 
 gitserver:
-  #localbasicpath: "/home/administrator/go/src/me/gitpoc/"
-  localbasicpath: "/Users/administrator/workspace/projects/go/src/me/gitoperator/"
-  url: "localhost:3000"
+  url: "http://localhost:3000"
   authtoken: ""
   username: jdediego
   password: "Turing_326"

@@ -3,7 +3,8 @@ package utils
 type RecordEvent struct {
 	Id   string `json:"id"` // Name of the blob/file
 	Group string `json:"group"` // Name of the tree/folder
-	Unit string `json:"unit"` // Unit mapped to Git repo
+	DBName string `json:"dbname"` // DB name mapped to Git repo
+	User string `json:"user"` // email of the individual performing the change
 	OperationType string `json:"operation_type"` // Values: (new | update | delete)
 	SendingTime int64 `json:"sending_time"` // Time of sending by the client
 	ReceptionTime int64 `json:"reception_time"` // Time of the reception by the API

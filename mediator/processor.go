@@ -3,78 +3,25 @@ package mediator
 import (
 	"sync"
 	"encoding/json"
-	git "me/gitoperator/git"
+	git "me/gitoperator/gitactors"
 	utils "me/gitoperator/utils"
-	topicsender "me/gitoperator/topicsender"
+	//topicsender "me/gitoperator/topicsender"
 )
 
 const componentMessage = "Processor"
 
 // https://golangbot.com/mutex/
 
-func ProcessClassifiedSet(eventSet utils.ClassiffiedEventsSet) {
-	if len(eventSet.ParEvents) > 0 {
-		for _, event := range eventSet.ParEvents {
-			go parallelProcess(&event)
-		}
-	}
-	if len(eventSet.SyncEvents) > 0 {
-		for _, event := range eventSet.SyncEvents {
-			var w sync.WaitGroup
-			var m sync.Mutex
-			w.Add(1)
-			go synchronizedProcess(&w, &m, &event)
-			w.Wait()
-		}
-	}
-}
-
-
 func ProcessSyncIncomingMessage(event *utils.RecordEvent) {
 	var w sync.WaitGroup
 	var m sync.Mutex
 	w.Add(1)
 	go synchronizedProcess(&w, &m, event)
-    w.Wait()
-}
-
-func parallelProcess(event *utils.RecordEvent) {
-	methodMessage := "parallelProcess"
-	var gitErr error
-	utils.PrintLogInfo(componentMessage, methodMessage, "event.OperationType: "+event.OperationType)
-	switch event.OperationType {
-		case "new":
-			gitErr = git.GitProcessNewFile(event)
-		case "update":
-			gitErr = git.GitUpdateFile(event)
-		case "delete":
-			gitErr = git.GitDeleteFile(event)
-	}
-
-	if gitErr != nil {
-		utils.PrintLogError(gitErr, componentMessage, methodMessage, "Error processing in Git server - ID: "+event.Id)
-		return
-	}
-
-	event.Status = "COMPLETE"
-	_, marshalErr := json.Marshal(event)
-	if marshalErr != nil {
-		utils.PrintLogError(marshalErr, componentMessage, methodMessage, "Error parsing response event- ID: "+event.Id)
-		return
-	}
-	
-	msgBytes, err := json.Marshal(event)
-    if err != nil {
-		utils.PrintLogError(marshalErr, componentMessage, methodMessage, "Error serializing response event - ID: "+event.Id)
-	}
-	// Once the git event has been processes properly is sent to the topic to update the RDB
-	topicsender.SendMessageToTopic(string(msgBytes))
-	utils.PrintLogInfo(componentMessage, methodMessage, "Event processed nad returned as response event successfully - ID: "+event.Id)
-}
+	w.Wait()
+} 
 
 func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordEvent) {
 	methodMessage := "synchronizedProcess"
-	
 	m.Lock()
 	var gitErr error
 	utils.PrintLogInfo(componentMessage, methodMessage, "event.OperationType: "+event.OperationType)
@@ -99,13 +46,13 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 		return
 	}
 	
-	msgBytes, err := json.Marshal(event)
+	/*msgBytes, err := json.Marshal(event)
     if err != nil {
 		utils.PrintLogError(marshalErr, componentMessage, methodMessage, "Error serializing response event - ID: "+event.Id)
 	}
 	// Once the git event has been processes properly is sent to the topic to update the RDB
-	topicsender.SendMessageToTopic(string(msgBytes))
-	utils.PrintLogInfo(componentMessage, methodMessage, "Event processed nad returned as response event successfully - ID: "+event.Id)
+	topicsender.SendMessageToTopic(string(msgBytes))*/
+	utils.PrintLogInfo(componentMessage, methodMessage, "Event processed and returned as response event successfully - ID: "+event.Id)
 	m.Unlock()
 	wg.Done()
 }

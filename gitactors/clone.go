@@ -1,4 +1,4 @@
-package git
+package gitactors
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ const componentCloneMessage = "Git Clone"
 // - Using the commit, iterate over all its files and print them
 // - Print all the commit history with commit messages, short hash and the
 // first line of the commit message
-func Clone(remote_repo_url string, local_repo_path string) {
+func Clone(remote_repo_url string, local_repo_path string) error{
 	var methodMsg = "Clone"
 	// Clone the given repository, creating the remote, the local branches and fetching the objects, exactly as:
 	utils.PrintLogInfo(componentCloneMessage, methodMsg, fmt.Sprintf("Clone the given repository - git clone %s %s", remote_repo_url, local_repo_path))
@@ -35,7 +35,7 @@ func Clone(remote_repo_url string, local_repo_path string) {
 	})
 	if err != nil {
 		utils.PrintLogError(err, componentCloneMessage, methodMsg, fmt.Sprintf("Error cloning the repo"))
-		return
+		return err
 	}
 
 	utils.PrintLogInfo(componentCloneMessage, methodMsg, fmt.Sprintf("Getting the latest commit on the current branch"))
@@ -44,14 +44,14 @@ func Clone(remote_repo_url string, local_repo_path string) {
 	ref, err := r.Head()
 	if err != nil {
 		utils.PrintLogError(err, componentCloneMessage, methodMsg, fmt.Sprintf("Error retrieving the branch being pointed by HEAD"))
-		return
+		return err
 	}
 
 	// ... retrieving the commit object
 	commit, err := r.CommitObject(ref.Hash())
 	if err != nil {
 		utils.PrintLogError(err, componentCloneMessage, methodMsg, fmt.Sprintf("Error retrieving the commit object"))
-		return
+		return err
 	}
 	utils.PrintLogInfo(componentCloneMessage, methodMsg, fmt.Sprintln(commit))
 	utils.PrintLogInfo(componentCloneMessage, methodMsg, fmt.Sprint("List the tree from HEAD"))
@@ -60,7 +60,7 @@ func Clone(remote_repo_url string, local_repo_path string) {
 	tree, err := commit.Tree()
 	if err != nil {
 		utils.PrintLogError(err, componentCloneMessage, methodMsg, fmt.Sprintf("Error retrieving the tree from the commit"))
-		return
+		return err
 	}
 
 	// ... get the files iterator and print the file
@@ -75,7 +75,7 @@ func Clone(remote_repo_url string, local_repo_path string) {
 	commitIter, err := r.Log(&git.LogOptions{From: commit.Hash})
 	if err != nil {
 		utils.PrintLogError(err, componentCloneMessage, methodMsg, fmt.Sprintf("Error retrieving the history"))
-		return
+		return err
 	}
 
 	err = commitIter.ForEach(func(c *object.Commit) error {
@@ -87,6 +87,7 @@ func Clone(remote_repo_url string, local_repo_path string) {
 	})
 	if err != nil {
 		utils.PrintLogError(err, componentCloneMessage, methodMsg, fmt.Sprintf("Error making the list of commits"))
-		return
+		return err
 	}
+	return nil
 }

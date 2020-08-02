@@ -25,6 +25,14 @@
   version = "v1.4.9"
 
 [[projects]]
+  digest = "1:d888308f8887be8103266d138aecb35bc165e16b743661c060faf61d32453b4d"
+  name = "github.com/go-git/go-git"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "02c228585e543413479ea36d3a2bbc80a070eb93"
+  version = "v3.2.0"
+
+[[projects]]
   digest = "1:e4f5819333ac698d294fe04dbf640f84719658d5c7ce195b10060cc37292ce79"
   name = "github.com/golang/snappy"
   packages = ["."]
@@ -332,6 +340,14 @@
   version = "v1.57.0"
 
 [[projects]]
+  digest = "1:6432785f8a6e930ab914151f8a89a7f3156b0981342e39b2ebc471f0f2b54cdd"
+  name = "gopkg.in/sourcegraph/go-vcsurl.v1"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "6b12603ea6fd7f84b8c90118face09df39ea10c6"
+  version = "v1"
+
+[[projects]]
   digest = "1:eb27cfcaf8d7e4155224dd0a209f1d0ab19784fef01be142638b78b7b6becd6b"
   name = "gopkg.in/src-d/go-billy.v4"
   packages = [
@@ -344,6 +360,29 @@
   pruneopts = "UT"
   revision = "780403cfc1bc95ff4d07e7b26db40a6186c5326e"
   version = "v4.3.2"
+
+[[projects]]
+  digest = "1:93c77383a2c5bbd311ac591edd18da20b0b52ddbc6bd3b0f3e57f5aff953ba27"
+  name = "gopkg.in/src-d/go-git.v3"
+  packages = [
+    "clients",
+    "clients/common",
+    "clients/http",
+    "clients/ssh",
+    "core",
+    "diff",
+    "formats/idxfile",
+    "formats/packfile",
+    "formats/pktline",
+    "storage/memory",
+    "storage/seekable",
+    "storage/seekable/internal/gitdir",
+    "storage/seekable/internal/index",
+    "utils/fs",
+  ]
+  pruneopts = "UT"
+  revision = "02c228585e543413479ea36d3a2bbc80a070eb93"
+  version = "v3.2.0"
 
 [[projects]]
   digest = "1:b2ad0a18676cd4d5b4b180709c1ea34dbabd74b3d7db0cc01e6d287d5f1e3a99"
@@ -415,6 +454,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/go-git/go-git",
     "github.com/google/uuid",
     "github.com/segmentio/kafka-go",
     "github.com/segmentio/kafka-go/snappy",

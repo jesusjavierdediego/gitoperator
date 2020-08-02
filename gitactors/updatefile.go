@@ -1,4 +1,4 @@
-package git
+package gitactors
 
 import (
 	"bytes"
@@ -26,28 +26,47 @@ import (
 func GitUpdateFile(event *utils.RecordEvent) error {
 	var methodMsg = "UpdateFile"
 	var repoPath = ""
+	var repoName = ""
 	var fileName = event.Id + ".json"
 
-	for _, unit := range config.Units {
-		if unit.Name == event.Unit {
-			repoPath = config.Gitserver.Localbasicpath + "/" + unit.Repo
+	for _, dbowner := range config.Dbowners {
+		if dbowner.Repo == event.DBName {
+			repoName = dbowner.Repo
+			repoPath = config.Localgitbasicpath + dbowner.Repo
 		}
 	}
 	if !(len(repoPath) > 0) {
-		utils.PrintLogError(nil, componentConsumerMessage, methodMsg, "Not found match with Unit in event in configuration - event.Unit: "+event.Unit)
-		return errors.New("Not found match with Unit in event in configuration - event.Unit: " + event.Unit)
+		utils.PrintLogError(nil, componentConsumerMessage, methodMsg, "Not found match with Unit in event in configuration - event.Unit: "+event.DBName)
+		return errors.New("Not found match with Unit in event in configuration - event.Unit: " + event.DBName)
 	}
 
-	var completeFileName = event.Group + "/" + fileName
+	var completeFileName = fileName
+	if len(event.Group) > 0 {
+		completeFileName = event.Group + "/" + fileName
+	}
+	
 
 	var prettyJSON bytes.Buffer
 	json.Indent(&prettyJSON, []byte(event.RecordContent), "", "\t")
 	var prettyNewRecord = string(prettyJSON.Bytes())
 
-	r, err := git.PlainOpen(repoPath)
-	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error opening local Git repository: "+repoPath)
-		return err
+	r, openErr := git.PlainOpen(repoPath)
+	if openErr != nil {
+		utils.PrintLogError(openErr, componentConsumerMessage, methodMsg, "Error opening local Git repository: "+repoPath)
+		/*
+		Error opening the local repo -> Try to clone the remote repo
+		*/
+		remote_repo_url := config.Gitserver.Url + "/" + config.Gitserver.Username + "/" + repoName
+
+		utils.PrintLogInfo(componentConsumerMessage, methodMsg, "We are going to clone the remote repo if it exists - URL: " + remote_repo_url)
+		cloneErr := Clone(remote_repo_url, repoPath)
+		if cloneErr != nil {
+			return cloneErr
+		}
+		r, openErr = git.PlainOpen(repoPath)
+		if openErr != nil {
+			return openErr
+		}
 	}
 
 	w, err := r.Worktree()
