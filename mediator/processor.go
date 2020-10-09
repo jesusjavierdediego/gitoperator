@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	git "me/gitoperator/gitactors"
 	utils "me/gitoperator/utils"
-	//topicsender "me/gitoperator/topicsender"
+	//topics "me/gitoperator/kafka"
 )
 
 const componentMessage = "Processor"

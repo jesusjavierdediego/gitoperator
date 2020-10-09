@@ -9,7 +9,7 @@ It listens to a given topic that matches to the GIT repository.
 
 import (
 	configuration "me/gitoperator/configuration"
-	topicconsumer "me/gitoperator/topicconsumer"
+	topics "me/gitoperator/kafka"
 	utils "me/gitoperator/utils"
 )
 const componentMessage = "GIT Operator Main process"
@@ -17,5 +17,5 @@ var config = configuration.GlobalConfiguration
 
 func main() {
 	utils.PrintLogInfo("GitOperator", componentMessage, "Start listening topic "+config.Kafka.Consumertopic)
-	topicconsumer.StartListening()
+	topics.StartListening()
 }

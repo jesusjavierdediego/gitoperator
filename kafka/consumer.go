@@ -1,4 +1,4 @@
-package topics
+package kafka
 
 import (
 	"time"
