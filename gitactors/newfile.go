@@ -29,18 +29,12 @@ var config = configuration.GlobalConfiguration
 // - push
 func GitProcessNewFile(event *utils.RecordEvent) error {
 	var methodMsg = "ProcessNewFile"
-	var repoPath = ""
-	var repoName = ""
+	var repoPath = config.Gitserver.Fspath
+	var repoName = config.Gitserver.Repository
 	var fileName = event.Id + ".json"
 
 	//utils.PrintLogInfo(componentConsumerMessage, methodMsg, "GIT NEW FILE1")
 	
-	for _, dbowner := range config.Dbowners {
-		if dbowner.Repo == event.DBName {
-			repoName = dbowner.Repo
-			repoPath = config.Localgitbasicpath + dbowner.Repo
-		}
-	}
 	if !(len(repoPath) > 0) {
 		utils.PrintLogError(nil, componentConsumerMessage, methodMsg, "Not found match with Unit in event in configuration - event.Unit: "+event.DBName)
 		return errors.New("Not found match with Unit in event in configuration - event.Unit: " + event.DBName)
@@ -56,10 +50,10 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 		/*
 		Error opening the local repo -> Try to clone the remote repo
 		*/
-		remote_repo_url := config.Gitserver.Url + "/" + config.Gitserver.Username + "/" + repoName
+		remoteRepoURL := config.Gitserver.Url + "/" + config.Gitserver.Username + "/" + repoName
 
-		utils.PrintLogInfo(componentConsumerMessage, methodMsg, "We are going to clone the remote repo if it exists - URL: " + remote_repo_url)
-		cloneErr := Clone(remote_repo_url, repoPath)
+		utils.PrintLogInfo(componentConsumerMessage, methodMsg, "We are going to clone the remote repo if it exists - URL: " + remoteRepoURL)
+		cloneErr := Clone(remoteRepoURL, repoPath)
 		if cloneErr != nil {
 			return cloneErr
 		}

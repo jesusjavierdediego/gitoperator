@@ -1,6 +1,4 @@
-profile: integration
-
-Microbatchfrequency: 100 # milliseconds
+profile: development
 
 kafka:
   bootstrapserver: "localhost:9094"
@@ -16,30 +14,14 @@ kafka:
   messageminsize: 10e3
   messagemaxsize: 10e6
 
-# Map of DB Owner/repository
-dbowners:
-  - dbname: USFirst
-    alias: test
-    repo: US
-  - dbname: UKFirst
-    alias: english
-    repo: UK
-  - dbname: EUFirst
-    alias: english
-    repo: EU
-  - dbname: GoNoSQL_1
-    alias: english
-    repo: GoNoSQL_1
-
-localgitbasicpath: "/Users/administrator/workspace/projects/go/src/me/gitoperator/"
-  #basicpath: "/home/administrator/go/src/me/gitpoc/"
-
 gitserver:
   url: "http://localhost:3000"
   authtoken: ""
   username: jdediego
   password: "Turing_326"
   email: "jesus.dediego.erles@gmail.com"
+  repository: "myRepository"
+  fspath: "/Users/administrator/workspace/projects/go/src/me/gitoperator/"
 
 
 

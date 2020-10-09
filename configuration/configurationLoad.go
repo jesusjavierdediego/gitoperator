@@ -12,17 +12,8 @@ var GlobalConfiguration Configuration
 
 type Configuration struct {
 	Profile        string
-	Localgitbasicpath string
-	Dbowners		   []dbowner
 	Gitserver      gitserver
 	Kafka          kafka
-	Microbatchfrequency int
-}
-
-type dbowner struct {
-	Dbname string
-	Alias string
-	Repo string
 }
 
 type gitserver struct {
@@ -31,6 +22,9 @@ type gitserver struct {
 	Username string
 	Password string
 	Email string
+	Repository string
+	Fspath string
+
 }
 type kafka struct {
 	Bootstrapserver string

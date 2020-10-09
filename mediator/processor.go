@@ -46,13 +46,15 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 		return
 	}
 	
-	/*msgBytes, err := json.Marshal(event)
+	/*
+	// Once the git event has been processed properly we can send a notification to a topic
+	msgBytes, err := json.Marshal(event)
     if err != nil {
 		utils.PrintLogError(marshalErr, componentMessage, methodMessage, "Error serializing response event - ID: "+event.Id)
 	}
-	// Once the git event has been processes properly is sent to the topic to update the RDB
-	topicsender.SendMessageToTopic(string(msgBytes))*/
-	utils.PrintLogInfo(componentMessage, methodMessage, "Event processed and returned as response event successfully - ID: "+event.Id)
+	topicsender.SendMessageToTopic(string(msgBytes))
+	*/
+	utils.PrintLogInfo(componentMessage, methodMessage, "Event processed successfully - ID: "+event.Id)
 	m.Unlock()
 	wg.Done()
 }

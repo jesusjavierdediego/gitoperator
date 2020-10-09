@@ -1,29 +1,21 @@
 package main
 
+/**
+The GIT Operator
+It matches to a single GIT repository specified in the config.
+Only 1 running instance of the GIT Operator can run simultaneously.
+It listens to a given topic that matches to the GIT repository.
+*/
+
 import (
-	//"time"
 	configuration "me/gitoperator/configuration"
 	topicconsumer "me/gitoperator/topicconsumer"
-	//mediator "me/gitoperator/mediator"
 	utils "me/gitoperator/utils"
 )
-const componentMessage = "Main process"
+const componentMessage = "GIT Operator Main process"
 var config = configuration.GlobalConfiguration
 
 func main() {
 	utils.PrintLogInfo("GitOperator", componentMessage, "Start listening topic "+config.Kafka.Consumertopic)
 	topicconsumer.StartListening()
-	//topicconsumer.StartListeningBatches()
-/* 	if err != nil {
-		utils.PrintLogError(err, componentMessage, "Main", "Main function failed")
-	} */
 }
-
-/* func startScheduledTasks(c configuration.Configuration){
-	methodMessage := "startScheduledTasks"
-	for true {
-		time.Sleep(time.Duration(config.Microbatchfrequency) * time.Hour)
-		utils.PrintLogInfo(componentMessage, methodMessage, "Scheduled action to run micro batches from received events: %s")
-		mediator.ProcessMicroBatch()
-	}
-} */

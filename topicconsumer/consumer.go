@@ -10,7 +10,6 @@ import (
 	mediator "me/gitoperator/mediator"
 	utils "me/gitoperator/utils"
 	kafka "github.com/segmentio/kafka-go"
-	//_ "github.com/segmentio/kafka-go/snappy"
 )
 
 const componentMessage = "Topics Consumer Service"
@@ -32,12 +31,9 @@ func getKafkaReader() *kafka.Reader {
 	})
 }
 
-var ActiveReposList []string
-
 func StartListening() {
 	methodMsg := "StartListening"
 	reader := getKafkaReader()
-	ActiveReposList = make([]string, 3)
 	defer reader.Close()
 	for {
 		m, err := reader.ReadMessage(context.Background())
@@ -49,20 +45,10 @@ func StartListening() {
 		event, eventErr := convertMessageToProcessable(m)
 		if eventErr != nil {
 			utils.PrintLogError(eventErr, componentMessage, methodMsg, fmt.Sprintf("Message convertion error - Key '%s'", m.Key))
-			// send alert about not valid request
+			// send alert about not valid request?
 		} else {
 			utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
 			mediator.ProcessSyncIncomingMessage(&event)
-			/*
- 			if !utils.Contains(activeReposList, event.DBName) {
-				fmt.Println("FREE repo (not in list!!!" + event.DBName)
-				ActiveReposList = append(activeReposList, event.DBName)
-				go mediator.NotSynchronizedProcess(&event)
-				activeReposList = utils.RemoveElementFromSlice(activeReposList, event.DBName)
-			} else {
-				mediator.ProcessSyncIncomingMessage(&event)
-			} 
-			*/
 		}
 	}
 }
@@ -73,7 +59,7 @@ func convertMessageToProcessable(msg kafka.Message) (utils.RecordEvent, error) {
 	var newRecordEvent utils.RecordEvent
 	unmarshalErr := json.Unmarshal(msg.Value, &newRecordEvent)
 	if unmarshalErr != nil {
-		//utils.PrintLogError(unmarshalErr, componentMessage, methodMsg, fmt.Sprintf("Error unmarshaling message content to JSON - Key '%s'", msg.Key))
+		utils.PrintLogWarn(unmarshalErr, componentMessage, methodMsg, fmt.Sprintf("Error unmarshaling message content to JSON - Key '%s'", msg.Key))
 		return newRecordEvent, unmarshalErr
 	}
 	utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("ID '%s'", newRecordEvent.Id))
