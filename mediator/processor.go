@@ -3,14 +3,13 @@ package mediator
 import (
 	"sync"
 	"encoding/json"
-	git "me/gitoperator/gitactors"
-	utils "me/gitoperator/utils"
-	//topics "me/gitoperator/kafka"
+	git "xqledger/gitoperator/gitactors"
+	utils "xqledger/gitoperator/utils"
+	//topics "xqledger/gitoperator/kafka"
 )
 
 const componentMessage = "Processor"
 
-// https://golangbot.com/mutex/
 
 func ProcessSyncIncomingMessage(event *utils.RecordEvent) {
 	var w sync.WaitGroup

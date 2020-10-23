@@ -1,6 +1,6 @@
 FROM golang:alpine as golang
 RUN apk add --no-cache git
-WORKDIR $GOPATH/src/me/gitoperator
+WORKDIR $GOPATH/src/xqledger/gitoperator
 COPY . ./
 ADD https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 /usr/bin/dep
 ADD resources/application.yml ./
@@ -16,7 +16,7 @@ RUN zip -r -0 /zoneinfo.zip .
 
 FROM scratch
 COPY --from=golang /go/bin/gitoperator /app
-COPY --from=golang /go/src/me/gitoperator/resources/application.yml ./
+COPY --from=golang /go/src/xqledger/gitoperator/resources/application.yml ./
 ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/

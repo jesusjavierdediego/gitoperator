@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	config "me/gitoperator/configuration"
+	config "xqledger/gitoperator/configuration"
 	"time"
 
 	logger "github.com/sirupsen/logrus"

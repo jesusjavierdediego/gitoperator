@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
-	utils "me/gitoperator/utils"
+	utils "xqledger/gitoperator/utils"
 )
 
 const componentProducerMessage = "Topics Producer Service"

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	utils "me/gitoperator/utils"
+	utils "xqledger/gitoperator/utils"
 	"os"
 	"path/filepath"
 	"time"
@@ -16,13 +16,12 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
-// This example receives a new file to be added to git
+// This example receives a command to update an existing  file into the git repo
 // - Pretty print
 // - apply changes to file
 // - Add
 // - commit
 // - push
-//func UpdateFile(local_repo_path string, file_name string, newRecord string) {
 func GitUpdateFile(event *utils.RecordEvent) error {
 	var methodMsg = "UpdateFile"
 	var repoPath = config.Gitserver.Fspath

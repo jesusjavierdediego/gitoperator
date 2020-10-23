@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	configuration "me/gitoperator/configuration"
-	mediator "me/gitoperator/mediator"
-	utils "me/gitoperator/utils"
+	configuration "xqledger/gitoperator/configuration"
+	mediator "xqledger/gitoperator/mediator"
+	utils "xqledger/gitoperator/utils"
 	kafka "github.com/segmentio/kafka-go"
 )
 

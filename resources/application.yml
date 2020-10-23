@@ -21,7 +21,7 @@ gitserver:
   password: "Turing_326"
   email: "jesus.dediego.erles@gmail.com"
   repository: "myRepository"
-  fspath: "/Users/administrator/workspace/projects/go/src/me/gitoperator/"
+  fspath: "/Users/administrator/workspace/projects/go/src/xqledger/gitoperator/"
 
 
 
