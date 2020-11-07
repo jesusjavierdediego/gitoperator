@@ -23,9 +23,8 @@ type gitserver struct {
 	Password string
 	Email string
 	Repository string
-	Fspath string
-
 }
+
 type kafka struct {
 	Bootstrapserver string
 	Groupid string

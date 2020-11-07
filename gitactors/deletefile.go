@@ -17,7 +17,10 @@ import (
 // - push
 func GitDeleteFile(event *utils.RecordEvent) error {
 	var methodMsg = "UpdateFile"
-	var repoPath = config.Gitserver.Fspath
+	repoPath, err := os.Getwd()
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Not found current directory")
+	}
 	var repoName = config.Gitserver.Repository
 	var fileName = event.Id + ".json"
 
@@ -25,7 +28,7 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 		utils.PrintLogError(nil, componentConsumerMessage, methodMsg, "Not found match with Unit in event in configuration - event.Unit: "+event.DBName)
 		return errors.New("Not found match with Unit in event in configuration - event.Unit: " + event.DBName)
 	}
-
+	repoPath = repoPath + "/" + repoName
 	var completeFileName = fileName
 	if len(event.Group) > 0 {
 		completeFileName = event.Group + "/" + fileName

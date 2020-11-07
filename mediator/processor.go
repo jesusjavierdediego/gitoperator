@@ -1,11 +1,11 @@
 package mediator
 
 import (
+	"errors"
 	"sync"
 	"encoding/json"
 	git "xqledger/gitoperator/gitactors"
 	utils "xqledger/gitoperator/utils"
-	//topics "xqledger/gitoperator/kafka"
 )
 
 const componentMessage = "Processor"
@@ -31,6 +31,8 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 			gitErr = git.GitUpdateFile(event)
 		case "delete":
 			gitErr = git.GitDeleteFile(event)
+		default:
+			gitErr = errors.New("Operation type not acceptable")
 	}
 
 	if gitErr != nil {

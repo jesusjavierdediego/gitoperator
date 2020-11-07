@@ -15,17 +15,13 @@ kafka:
   messagemaxsize: 10e6
 
 gitserver:
-  url: "http://localhost:3000"
+  url: http://localhost:3000
   authtoken: ""
-  username: jdediego
-  password: "Turing_326"
-  email: "jesus.dediego.erles@gmail.com"
-  repository: "myRepository"
-  fspath: "/Users/administrator/workspace/projects/go/src/xqledger/gitoperator/"
+  username: TestOrchestrator
+  password: TestOrchestrator
+  email: TestOrchestrator@xqledger.com
+  repository: TestRepo
 
-
-
-    
   
 
 

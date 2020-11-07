@@ -78,16 +78,18 @@ func Clone(remote_repo_url string, local_repo_path string) error{
 		return err
 	}
 
+	utils.PrintLogInfo(componentCloneMessage, methodMsg, "Getting the list of commits")
 	err = commitIter.ForEach(func(c *object.Commit) error {
 		hash := c.Hash.String()
 		line := strings.Split(c.Message, "\n")
 		utils.PrintLogInfo(componentCloneMessage, methodMsg, fmt.Sprintln(hash[:7], line[0]))
-
 		return nil
 	})
+
 	if err != nil {
 		utils.PrintLogError(err, componentCloneMessage, methodMsg, fmt.Sprintf("Error making the list of commits"))
 		return err
 	}
+	utils.PrintLogInfo(componentCloneMessage, methodMsg, "Clone operation complete for repo: " + remote_repo_url)
 	return nil
 }

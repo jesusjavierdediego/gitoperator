@@ -29,18 +29,25 @@ var config = configuration.GlobalConfiguration
 // - push
 func GitProcessNewFile(event *utils.RecordEvent) error {
 	var methodMsg = "ProcessNewFile"
-	var repoPath = config.Gitserver.Fspath
+	repoPath, err := os.Getwd()
+	if err != nil {
+		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Not found current directory")
+	}
 	var repoName = config.Gitserver.Repository
 	var fileName = event.Id + ".json"
 
-	//utils.PrintLogInfo(componentConsumerMessage, methodMsg, "GIT NEW FILE1")
-	
 	if !(len(repoPath) > 0) {
 		utils.PrintLogError(nil, componentConsumerMessage, methodMsg, "Not found match with Unit in event in configuration - event.Unit: "+event.DBName)
 		return errors.New("Not found match with Unit in event in configuration - event.Unit: " + event.DBName)
 	}
-
-	var completeFileName = event.Group + "/" + fileName
+	repoPath = repoPath + "/" + repoName
+	var completeFileName = ""
+	if len(event.Group) > 0 {
+		completeFileName = event.Group + "/" + fileName
+	} else {
+		completeFileName = fileName
+	}
+	
 
 	var r *git.Repository
 	var openErr error
@@ -51,7 +58,7 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 		Error opening the local repo -> Try to clone the remote repo
 		*/
 		remoteRepoURL := config.Gitserver.Url + "/" + config.Gitserver.Username + "/" + repoName
-
+		utils.PrintLogInfo(componentCloneMessage, methodMsg, "remoteRepoURL: " + remoteRepoURL)
 		utils.PrintLogInfo(componentConsumerMessage, methodMsg, "We are going to clone the remote repo if it exists - URL: " + remoteRepoURL)
 		cloneErr := Clone(remoteRepoURL, repoPath)
 		if cloneErr != nil {
@@ -117,6 +124,8 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, commitPull.String())
 
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "File: "+completeFileName)
+
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git add file")
 	_, err = w.Add(completeFileName)
 	if err != nil {
@@ -158,6 +167,9 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, obj.String())
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git push")
+
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, config.Gitserver.Username)
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, config.Gitserver.Password)
 
 	// push using default options
 	err = r.Push(&git.PushOptions{
