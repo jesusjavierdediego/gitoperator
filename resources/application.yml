@@ -1,7 +1,7 @@
 profile: development
 
 kafka:
-  bootstrapserver: "localhost:9094"
+  bootstrapserver: "kafka:9094"
   groupid: GitOperatorCG
   sessiontimeout: 5000
   eventschannelenabled: true  
@@ -15,7 +15,7 @@ kafka:
   messagemaxsize: 10e6
 
 gitserver:
-  url: http://localhost:3000
+  url: http://git-server:3000
   authtoken: ""
   username: TestOrchestrator
   password: TestOrchestrator
