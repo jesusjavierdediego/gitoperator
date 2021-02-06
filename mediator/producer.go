@@ -1,11 +1,15 @@
-package kafka
+package mediator
 
 import (
 	"context"
 	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
 	utils "xqledger/gitoperator/utils"
+	configuration "xqledger/gitoperator/configuration"
 )
+
+var config = configuration.GlobalConfiguration
+
 
 const componentProducerMessage = "Topics Producer Service"
 

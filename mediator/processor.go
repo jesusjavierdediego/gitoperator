@@ -4,6 +4,8 @@ import (
 	"errors"
 	"sync"
 	"encoding/json"
+	"strconv"
+	"fmt"
 	git "xqledger/gitoperator/gitactors"
 	utils "xqledger/gitoperator/utils"
 )
@@ -39,6 +41,13 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 		utils.PrintLogError(gitErr, componentMessage, methodMessage, "Error processing in Git server - ID: "+event.Id)
 		return
 	}
+	// Send update of record to topic
+	cleanDbRecord, cleanErr := strconv.Unquote(event.RecordContent)
+	if cleanErr != nil {
+		utils.PrintLogError(cleanErr, componentMessage, methodMessage, "Error parsing record event payload event- ID: "+event.Id)
+	}
+	SendMessageToTopic(cleanDbRecord)
+	utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("DB Record in event succesfully sent to continuous query topic - Event ID '%s'", event.Id))
 
 	event.Status = "COMPLETE"
 	_, marshalErr := json.Marshal(event)
