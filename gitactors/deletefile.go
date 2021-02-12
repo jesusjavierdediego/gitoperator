@@ -144,5 +144,6 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in push")
 		return err
 	}
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, utils.Record_delete_git_written_ok)
 	return nil
 }

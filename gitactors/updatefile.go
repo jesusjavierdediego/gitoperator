@@ -149,6 +149,7 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in push")
 		return err
 	}
+	utils.PrintLogInfo(componentConsumerMessage, methodMsg, utils.Record_update_git_written_ok)
 	return nil
 }
 

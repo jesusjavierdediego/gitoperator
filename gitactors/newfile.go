@@ -5,12 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
-	configuration "xqledger/gitoperator/configuration"
-	utils "xqledger/gitoperator/utils"
 	"os"
 	"path/filepath"
 	"time"
-    //"fmt"
+	configuration "xqledger/gitoperator/configuration"
+	utils "xqledger/gitoperator/utils"
+
+	//"fmt"
 	//"github.com/go-git/go-git/v5"
 	//"github.com/go-git/go-git/v5/plumbing"
 	//"github.com/go-git/go-git"
@@ -168,8 +169,8 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, obj.String())
 	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git push")
 
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, config.Gitserver.Username)
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, config.Gitserver.Password)
+	//utils.PrintLogInfo(componentConsumerMessage, methodMsg, config.Gitserver.Username)
+	//utils.PrintLogInfo(componentConsumerMessage, methodMsg, config.Gitserver.Password)
 
 	// push using default options
 	err = r.Push(&git.PushOptions{

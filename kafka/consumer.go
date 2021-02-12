@@ -38,16 +38,16 @@ func StartListening() {
 	for {
 		m, err := reader.ReadMessage(context.Background())
 		if err != nil {
-			utils.PrintLogError(err, componentMessage, methodMsg, "Error reading message")
+			utils.PrintLogError(err, componentMessage, methodMsg, fmt.Sprintf("%s - Error reading message", utils.Event_topic_received_fail))
 		}
 		msg := fmt.Sprintf("Message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		utils.PrintLogInfo(componentMessage, methodMsg, msg)
 		event, eventErr := convertMessageToProcessable(m)
 		if eventErr != nil {
-			utils.PrintLogError(eventErr, componentMessage, methodMsg, fmt.Sprintf("Message convertion error - Key '%s'", m.Key))
+			utils.PrintLogError(eventErr, componentMessage, methodMsg, fmt.Sprintf("%s - Message convertion error - Key '%s'", utils.Event_topic_received_unacceptable, m.Key))
 			// send alert about not valid request?
 		} else {
-			utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("Message converted to event successfully - Key '%s'", m.Key))
+			utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("%s - Message converted to event successfully - Key '%s'", utils.Event_topic_received_ok, m.Key))
 			mediator.ProcessSyncIncomingMessage(&event)
 		}
 	}

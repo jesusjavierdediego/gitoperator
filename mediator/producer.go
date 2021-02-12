@@ -21,7 +21,7 @@ func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	})
 }
 
-func SendMessageToTopic(msg string) {
+func SendMessageToTopic(msg string) error{
 	methodMsg := "SendMessageToTopic"
 	broker := config.Kafka.Bootstrapserver
 	topic := config.Kafka.Gitactionbacktopic
@@ -37,6 +37,8 @@ func SendMessageToTopic(msg string) {
 	err := kafkaWriter.WriteMessages(context.Background(), topicContent)
 	if err != nil {
 		utils.PrintLogError(err, componentProducerMessage, methodMsg, "Error writing message to topic")
+		return err
 	}
 	utils.PrintLogInfo(componentProducerMessage, methodMsg, "Message sent to topic successfully")
+	return nil
 }
