@@ -4,9 +4,6 @@ WORKDIR $GOPATH/src/xqledger/gitoperator
 COPY . ./
 ADD https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 /usr/bin/dep
 ADD resources/application.yml ./
-COPY Gopkg.toml Gopkg.lock ./
-RUN chmod +x /usr/bin/dep
-RUN dep ensure --vendor-only
 RUN CGO_ENABLED=0 go install -ldflags '-extldflags "-static"'
 
 FROM alpine:latest as alpine

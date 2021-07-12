@@ -1,7 +1,7 @@
 package gitactors
 
 import (
-	"errors"
+	//"errors"
 	utils "xqledger/gitoperator/utils"
 	"os"
 	"path/filepath"
@@ -11,24 +11,21 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
+const componentDeleteMessage = "Git Delete File Processor"
+
+
 // This example receives a command to delete an existing file in the git repo
 // - Remove
 // - commit
 // - push
 func GitDeleteFile(event *utils.RecordEvent) error {
 	var methodMsg = "UpdateFile"
-	repoPath, err := os.Getwd()
-	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Not found current directory")
-	}
-	var repoName = config.Gitserver.Repository
 	var fileName = event.Id + ".json"
-
-	if !(len(repoPath) > 0) {
-		utils.PrintLogError(nil, componentConsumerMessage, methodMsg, "Not found match with Unit in event in configuration - event.Unit: "+event.DBName)
-		return errors.New("Not found match with Unit in event in configuration - event.Unit: " + event.DBName)
+	repoPath, err := GetLocalRepoPath(event)
+	if err != nil {
+		utils.PrintLogError(err, componentNewMessage, methodMsg, "Error getting path for local cloned git repository: "+repoPath)
 	}
-	repoPath = repoPath + "/" + repoName
+	repoPath = repoPath + "/" + event.DBName
 	var completeFileName = fileName
 	if len(event.Group) > 0 {
 		completeFileName = event.Group + "/" + fileName
@@ -36,13 +33,13 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 
 	r, openErr := git.PlainOpen(repoPath)
 	if openErr != nil {
-		utils.PrintLogError(openErr, componentConsumerMessage, methodMsg, "Error opening local Git repository: "+repoPath)
+		utils.PrintLogError(openErr, componentDeleteMessage, methodMsg, "Error opening local Git repository: "+repoPath)
 		/*
 		Error opening the local repo -> Try to clone the remote repo
 		*/
-		remoteRepoURL := config.Gitserver.Url + "/" + config.Gitserver.Username + "/" + repoName
+		remoteRepoURL := config.Gitserver.Url + "/" + config.Gitserver.Username + "/" + event.DBName
 
-		utils.PrintLogInfo(componentConsumerMessage, methodMsg, "We are going to clone the remote repo if it exists - URL: " + remoteRepoURL)
+		utils.PrintLogInfo(componentDeleteMessage, methodMsg, "We are going to clone the remote repo if it exists - URL: " + remoteRepoURL)
 		cloneErr := Clone(remoteRepoURL, repoPath)
 		if cloneErr != nil {
 			return cloneErr
@@ -55,60 +52,60 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 
 	w, err := r.Worktree()
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error getting Worktree in local Git repository: "+repoPath)
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error getting Worktree in local Git repository: "+repoPath)
 		return err
 	}
 
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "Lets go to delete the file - "+completeFileName)
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "Lets go to delete the file - "+completeFileName)
 	fileLocalPath := filepath.Join(repoPath, completeFileName)
 
 	
 	deleteFileErr := os.Remove(fileLocalPath)
 	if deleteFileErr != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error deleting local file: "+fileLocalPath)
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error deleting local file: "+fileLocalPath)
 		return deleteFileErr
 	}
 
 
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "Deleted file - "+completeFileName)
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "Deleted file - "+completeFileName)
 
 	//PULL FIRST
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git pull origin")
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git pull origin")
 	w.Pull(&git.PullOptions{RemoteName: "origin"})
 
 	// Print the latest commit that was just pulled
 	ref, err := r.Head()
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error getting HEAD reference")
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error getting HEAD reference")
 		return err
 	}
 	commitPull, err := r.CommitObject(ref.Hash())
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in commit - Ref Hash: "+ref.Hash().String())
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in commit - Ref Hash: "+ref.Hash().String())
 		return err
 	}
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, commitPull.String())
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, commitPull.String())
 
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git add file")
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git add file")
 	_, err = w.Add(completeFileName)
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in add - File: "+completeFileName)
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in add - File: "+completeFileName)
 		return err
 	}
 
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git status --porcelain")
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git status --porcelain")
 	status, err := w.Status()
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error getting status in local repo")
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error getting status in local repo")
 		return err
 	}
 
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, status.String())
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, status.String())
 
 	// Commits the current staging area to the repository, with the new file
 	// just created. We should provide the object.Signature of Author of the
 	// commit.
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git commit -m \""+event.Message+"\"")
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git commit -m \""+event.Message+"\"")
 	commit, err := w.Commit(event.Message, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  config.Gitserver.Username,
@@ -117,20 +114,20 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 		},
 	})
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in commit - Message: "+event.Message)
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in commit - Message: "+event.Message)
 		return err
 	}
 
 	// Prints the current HEAD to verify that all worked well.
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git show -s")
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git show -s")
 	obj, err := r.CommitObject(commit)
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in showing commit for verification")
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in showing commit for verification")
 		return err
 	}
 
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, obj.String())
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, "git push")
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, obj.String())
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git push")
 
 	// push using default options
 	err = r.Push(&git.PushOptions{
@@ -141,9 +138,9 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 		Progress: os.Stdout,
 	})
 	if err != nil {
-		utils.PrintLogError(err, componentConsumerMessage, methodMsg, "Error in push")
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in push")
 		return err
 	}
-	utils.PrintLogInfo(componentConsumerMessage, methodMsg, utils.Record_delete_git_written_ok)
+	utils.PrintLogInfo(componentDeleteMessage, methodMsg, utils.Record_delete_git_written_ok)
 	return nil
 }

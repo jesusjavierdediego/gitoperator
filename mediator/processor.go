@@ -3,7 +3,7 @@ package mediator
 import (
 	"errors"
 	"sync"
-	"strconv"
+	"encoding/json"
 	"fmt"
 	git "xqledger/gitoperator/gitactors"
 	utils "xqledger/gitoperator/utils"
@@ -53,11 +53,16 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 	utils.PrintLogInfo(componentMessage, methodMessage, logMsgOk)
 
 	// Send update of record to topic
-	cleanDbRecord, cleanErr := strconv.Unquote(event.RecordContent)
-	if cleanErr != nil {
-		utils.PrintLogError(cleanErr, componentMessage, methodMessage, "Error parsing record event payload event- ID: "+event.Id)
+	// cleanDbRecord, cleanErr := strconv.Unquote(event.RecordContent)
+	// if cleanErr != nil {
+	// 	utils.PrintLogError(cleanErr, componentMessage, methodMessage, "Error parsing record event payload event- ID: "+event.Id)
+	// }
+	// sendErr := SendMessageToTopic(cleanDbRecord, config.Kafka.Gitactionbacktopic)
+	eventAsJSON, err := json.Marshal(event)
+	if err != nil {
+		utils.PrintLogError(err, componentMessage, methodMessage, "Event cannot be marshaled properly after written to Git")
 	}
-	sendErr := SendMessageToTopic(cleanDbRecord)
+	sendErr := SendMessageToTopic(string(eventAsJSON), config.Kafka.Gitactionbacktopic)
 	if sendErr != nil {
 		utils.PrintLogError(sendErr, componentMessage, methodMessage, utils.Event_written_record_topic_send_fail)
 

@@ -22,7 +22,7 @@ type gitserver struct {
 	Username string
 	Password string
 	Email string
-	Repository string
+	Localreposlocation string
 }
 
 type kafka struct {
@@ -35,7 +35,6 @@ type kafka struct {
 	Autooffset string
 	Consumertopic string
 	Gitactionbacktopic string
-	Alerttopic string
 	Messageminsize int
 	Messagemaxsize int
 }
@@ -65,18 +64,17 @@ SERVER_PORT=8181 go run main.go
 func initConfiguration() Configuration {
 	var configuration Configuration
 
-	//profile := os.Getenv("PROFILE")
+	profile := os.Getenv("PROFILE")
 	//ENV VARS
 	viper.AutomaticEnv()                                   // Automatic binding from enviroment
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_")) // to charge enviroment
 	viper.SetConfigName("application.dev")
 
-	/*if strings.ToLower(profile) == "dev" {
+	if strings.ToLower(profile) == "dev" {
 		viper.SetConfigName("application.dev")
 	} else {
 		viper.SetConfigName("application")
-	}*/
-	viper.SetConfigName("application")
+	}
 
 	viper.SetConfigType("yaml")
 	path := calculatePath("resources")
