@@ -6,8 +6,7 @@ package utils
 // JSON STRUCTURE -----------> GROUP --------> GIT FOLDER
 
 type RecordEvent struct {
-	Id   string `json:"id"` // Name of the blob/file
-	Uuid string `json:"uuid"` // Unique ID
+	Id   string `json:"id"` // Name of the file/record in the database
 	Group string `json:"group"` // Name of the Git tree/folder
 	DBName string `json:"dbname"` // DB name mapped to Git repo
 	User string `json:"user"` // email of the individual performing the change
@@ -16,7 +15,6 @@ type RecordEvent struct {
 	ReceptionTime int64 `json:"reception_time"` // Time of the reception by the API
 	ProcessingTime int64 `json:"processing_time"` // Time of processing by the Git Operator
 	Priority string `json:"priority"`  // API can qualify an event with a priority to be considered in concurrent writing decisions (HIGH | MEDIUM | LOW)
-	Message string `json:"message"`// Commit message with SENDER (user) and REASONS 
 	RecordContent string `json:"record_content"` // empty if op OperationType == delete | update
 	Status string `json:"status"` // PENDING | NOTVALID | INCOMPLETE | COMPLETE
 }

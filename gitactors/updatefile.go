@@ -107,8 +107,8 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 	// Commits the current staging area to the repository, with the new file
 	// just created. We should provide the object.Signature of Author of the
 	// commit.
-	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "git commit -m \""+event.Message+"\"")
-	commit, err := w.Commit(event.Message, &git.CommitOptions{
+	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "git commit -m \""+completeFileName+"\"")
+	commit, err := w.Commit(completeFileName, &git.CommitOptions{ //was: event.Message
 		Author: &object.Signature{
 			Name:  config.Gitserver.Username,
 			Email: config.Gitserver.Email,
@@ -116,7 +116,7 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 		},
 	})
 	if err != nil {
-		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error in commit - Message: "+event.Message)
+		utils.PrintLogError(err, componentUpdateMessage, methodMgit add .sg, "Error in commit - Message: "+event.Message)
 		return err
 	}
 
