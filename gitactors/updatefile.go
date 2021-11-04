@@ -24,16 +24,21 @@ const componentUpdateMessage = "Git Update File Processor"
 // - commit
 // - push
 func GitUpdateFile(event *utils.RecordEvent) error {
+	
 	var methodMsg = "UpdateFile"
 	var fileName = event.Id + ".json"
+
+	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "We are going to update the file")
+	
 	repoPath, err := GetLocalRepoPath(event)
 	if err != nil {
 		utils.PrintLogError(err, componentNewMessage, methodMsg, "Error getting path for local clones git repository: "+repoPath)
 	}
-	repoPath = repoPath + "/" + event.DBName
-	var completeFileName = fileName
+	var completeFileName = ""
 	if len(event.Group) > 0 {
 		completeFileName = event.Group + "/" + fileName
+	} else {
+		completeFileName = fileName
 	}
 
 	var prettyJSON bytes.Buffer
@@ -61,14 +66,16 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 
 	w, err := r.Worktree()
 	if err != nil {
-		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error getting Worktree in local Git repository: "+repoPath)
+		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error getting Worktree in local Git repository: "+completeFileName)
 		return err
 	}
 
 	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "write content to file - "+completeFileName)
-	fileLocalPath := filepath.Join(repoPath, completeFileName)
+	filePathAndName := filepath.Join(repoPath, completeFileName)
+	utils.PrintLogInfo(componentNewMessage, methodMsg, "filePathAndName to process: "+filePathAndName)
 
-	replaceContentInFile(fileLocalPath, prettyNewRecord)
+
+	replaceContentInFile(filePathAndName, prettyNewRecord)
 	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "Written content to file - "+completeFileName)
 
 	//PULL FIRST
@@ -108,7 +115,7 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 	// just created. We should provide the object.Signature of Author of the
 	// commit.
 	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "git commit -m \""+completeFileName+"\"")
-	commit, err := w.Commit(completeFileName, &git.CommitOptions{ //was: event.Message
+	commit, err := w.Commit(completeFileName, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  config.Gitserver.Username,
 			Email: config.Gitserver.Email,
@@ -116,7 +123,7 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 		},
 	})
 	if err != nil {
-		utils.PrintLogError(err, componentUpdateMessage, methodMgit add .sg, "Error in commit - Message: "+event.Message)
+		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error in commit - ID: "+event.Id)
 		return err
 	}
 

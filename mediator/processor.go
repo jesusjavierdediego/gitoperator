@@ -29,14 +29,17 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 	var logMsgFail = ""
 	switch event.OperationType {
 		case "new":
+			utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("New Event with ID %s", event.Id))
 			gitErr = git.GitProcessNewFile(event)
 			logMsgOk = utils.Record_new_git_written_ok
 			logMsgFail = utils.Record_new_git_written_fail
 		case "update":
+			utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("Update Event with ID %s", event.Id))
 			gitErr = git.GitUpdateFile(event)
 			logMsgOk = utils.Record_update_git_written_ok
 			logMsgFail = utils.Record_update_git_written_fail
 		case "delete":
+			utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("Delete Event with ID %s", event.Id))
 			gitErr = git.GitDeleteFile(event)
 			logMsgOk = utils.Record_delete_git_written_ok
 			logMsgFail = utils.Record_delete_git_written_fail
@@ -47,7 +50,7 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 	}
 
 	if gitErr != nil {
-		utils.PrintLogError(gitErr, componentMessage, methodMessage, fmt.Sprintf("% - Error processing in Git server - ID: %s", logMsgFail, event.Id))
+		utils.PrintLogError(gitErr, componentMessage, methodMessage, fmt.Sprintf("%s - Error processing in Git server - ID: %s", logMsgFail, event.Id))
 		return
 	}
 	utils.PrintLogInfo(componentMessage, methodMessage, logMsgOk)

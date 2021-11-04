@@ -106,7 +106,7 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 	// just created. We should provide the object.Signature of Author of the
 	// commit.
 	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git commit -m \""+completeFileName+"\"")
-	commit, err := w.Commit(completeFileName, &git.CommitOptions{ // was: event.Message
+	commit, err := w.Commit(completeFileName, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  config.Gitserver.Username,
 			Email: config.Gitserver.Email,
@@ -114,7 +114,7 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 		},
 	})
 	if err != nil {
-		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in commit - Message: "+event.Message)
+		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in commit - ID: "+event.Id)
 		return err
 	}
 

@@ -61,7 +61,7 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 		utils.PrintLogInfo(componentNewMessage, methodMsg, "We are going to clone the remote repo if it exists - URL: " + remoteRepoURL)
 		cloneErr := Clone(remoteRepoURL, repoPath)
 		if cloneErr != nil {
-			utils.PrintLogError(cloneErr,  componentNewMessage, methodMsg, "Error clomning the repo: "+repoPath)
+			utils.PrintLogError(cloneErr,  componentNewMessage, methodMsg, "Error cloning the repo: "+repoPath)
 			return  cloneErr
 			/*
 			Error cloning a repo - It does not exist - Init a new repo
@@ -104,9 +104,10 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 	}
 
 	filePathAndName := filepath.Join(repoPath, completeFileName)
-	err = ioutil.WriteFile(filePathAndName, prettyJSON.Bytes(), 0644)
-	if err != nil {
-		utils.PrintLogError(err, componentNewMessage, methodMsg, "Error writing to local file: "+filePathAndName)
+	utils.PrintLogInfo(componentNewMessage, methodMsg, "filePathAndName to process: "+filePathAndName)
+	writeFileErr := ioutil.WriteFile(filePathAndName, prettyJSON.Bytes(), 0644)
+	if writeFileErr != nil {
+		utils.PrintLogError(writeFileErr, componentNewMessage, methodMsg, "Error writing to local file: "+filePathAndName)
 		if len(event.Group) > 0 {
 			utils.PrintLogInfo(componentNewMessage, methodMsg, "We are going to make the tree if it does not exist")
 			makedirErr := os.Mkdir(filepath.Join(repoPath, event.Group), 0755)
@@ -162,7 +163,7 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 	// Commits the current staging area to the repository, with the new file just created.
 	// We should provide the object.Signature of Author of the commit.
 	utils.PrintLogInfo(componentNewMessage, methodMsg, "git commit -m \""+completeFileName+"\"")
-	commit, err := w.Commit(completeFileName, &git.CommitOptions{ // was: event.Message
+	commit, err := w.Commit(completeFileName, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  config.Gitserver.Username,
 			Email: config.Gitserver.Email,
@@ -170,7 +171,7 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 		},
 	})
 	if err != nil {
-		utils.PrintLogError(err, componentNewMessage, methodMsg, "Error in commit - Message: "+event.Message)
+		utils.PrintLogError(err, componentNewMessage, methodMsg, "Error in commit - ID: "+event.Id)
 		return err
 	}
 
@@ -199,6 +200,6 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 	if err != nil {
 		utils.PrintLogError(err, componentNewMessage, methodMsg, "Error in push")
 		return err
-	}
+	} 
 	return nil
 }

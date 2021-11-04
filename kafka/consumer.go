@@ -40,7 +40,7 @@ func StartListening() {
 		if err != nil {
 			utils.PrintLogError(err, componentMessage, methodMsg, fmt.Sprintf("%s - Error reading message", utils.Event_topic_received_fail))
 		}
-		msg := fmt.Sprintf("Message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
+		msg := fmt.Sprintf("Message received at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
 		utils.PrintLogInfo(componentMessage, methodMsg, msg)
 		event, eventErr := convertMessageToProcessable(m)
 		if eventErr != nil {

@@ -19,8 +19,5 @@ gitserver:
   username: TestOrchestrator
   password: TestOrchestrator
   email: TestOrchestrator@xqledger.com
-  localreposlocation: "/var/git/repos/"
-
-  
-
+  localreposlocation: "/var/git/repositories/"
 

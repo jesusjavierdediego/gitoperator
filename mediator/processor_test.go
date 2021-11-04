@@ -21,7 +21,6 @@ func getNewRecordEventLevel0() utils.RecordEvent {
 	newRecordEvent.SendingTime = 0
 	newRecordEvent.ProcessingTime = 0
 	newRecordEvent.OperationType = "new"
-	newRecordEvent.Message = "New file test level 0"
 	newRecordEvent.RecordContent = `{"id":11,"name":"Irshad","department":"IT","status":"PENDING", "rate":14.098,"designation":"Secretary","address":{"city":"Delhi","state":"Delhi","country":"India"},"sons":["Omar","Rajiv","Fatimah"],"partners":[{"name":"Robert","surname":"Young","company":"CIA"}]}`
 	return newRecordEvent
 }
@@ -55,7 +54,6 @@ func getExistingRecordEventLevel0() utils.RecordEvent {
 	updateRecordEvent.SendingTime = 0
 	updateRecordEvent.ProcessingTime = 0
 	updateRecordEvent.OperationType = "update"
-	updateRecordEvent.Message = "Update test level 0"
 	updateRecordEvent.RecordContent = `{"id":11,"name":"Irshad","department":"Supplies","status":"PENDING", "rate":15.26,"designation":"Product Manager","address":{"city":"Delhi","state":"Delhi","country":"India"},"sons":["Omar","Rajiv","Fatimah"],"partners":[{"name":"Robert","surname":"Young","company":"CIA"}]}`
 	return updateRecordEvent
 }
