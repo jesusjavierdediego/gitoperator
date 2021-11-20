@@ -1,7 +1,7 @@
 profile: dev
 
 kafka:
-  bootstrapserver: "localhost:9094"
+  bootstrapserver: 127.0.0.1:9094
   groupid: GitOperatorCG
   sessiontimeout: 5000
   eventschannelenabled: true  
@@ -18,8 +18,8 @@ gitserver:
   authtoken: ""
   username: TestOrchestrator
   password: TestOrchestrator
-  email: TestOrchestrator@xqledger.com
-  localreposlocation: "/var/git/repos/"
+  email: testorchestrator@gmail.com
+  localreposlocation: "/var/git/repos"
 
   
 

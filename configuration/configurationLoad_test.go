@@ -26,7 +26,7 @@ func TestConfiguration(t *testing.T) {
 		conf := GlobalConfiguration
 
 		So(conf, ShouldNotBeNil)
-		So(conf.Kafka.Bootstrapserver, ShouldEqual, "kafka:9094")
+		So(conf.Kafka.Bootstrapserver, ShouldEqual, "127.0.0.1:9094")
 	})
 
 }

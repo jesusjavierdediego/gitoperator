@@ -4,7 +4,6 @@ import (
 	"testing"
 	. "github.com/smartystreets/goconvey/convey"
 	utils "xqledger/gitoperator/utils"
-	//configuration "me/gitoperator/configuration"
 )
 
 const tenant = "testTenant"
@@ -37,7 +36,6 @@ func getNewRecordEventLevel1() utils.RecordEvent {
 	newRecordEvent.SendingTime = 0
 	newRecordEvent.ProcessingTime = 0
 	newRecordEvent.OperationType = "new"
-	newRecordEvent.Message = "New file test level 1"
 	newRecordEvent.RecordContent = `{"name": "John", "age": 31, "city": "New York"}`
 	return newRecordEvent
 }
@@ -70,7 +68,6 @@ func getExistingRecordEventLevel1() utils.RecordEvent {
 	updateRecordEvent.SendingTime = 0
 	updateRecordEvent.ProcessingTime = 0
 	updateRecordEvent.OperationType = "update"
-	updateRecordEvent.Message = "Update test level 1"
 	updateRecordEvent.RecordContent = `{"name": "John", "age": 32, "city": "Cincinatti"}`
 	return updateRecordEvent
 }

@@ -1,3 +1,5 @@
 /vendor
 gitoperator
-/TestRepo
+integration-tests/gitea
+integration-tests/mysql
+testreports/*.xml
