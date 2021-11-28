@@ -1,10 +1,11 @@
 package mediator
 
 import (
-	"errors"
-	"sync"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
+	"sync"
 	git "xqledger/gitoperator/gitactors"
 	utils "xqledger/gitoperator/utils"
 )
@@ -45,12 +46,11 @@ func synchronizedProcess(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordE
 			logMsgFail = utils.Record_delete_git_written_fail
 		default:
 			gitErr = errors.New("Operation type not acceptable")
-			logMsgOk = utils.Record_new_git_written_ok
-			logMsgFail = utils.Record_new_git_written_fail
+			logMsgFail = utils.Record_operation_not_accepted
 	}
-
+	log.Println(fmt.Sprintf("Event iD: %s", event.Id))
 	if gitErr != nil {
-		utils.PrintLogError(gitErr, componentMessage, methodMessage, fmt.Sprintf("%s - Error processing in Git server - ID: %s", logMsgFail, event.Id))
+		utils.PrintLogError(gitErr, componentMessage, methodMessage, logMsgFail)
 		return
 	}
 	utils.PrintLogInfo(componentMessage, methodMessage, logMsgOk)

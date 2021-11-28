@@ -11,6 +11,8 @@ const Record_update_git_written_fail = "RECORD UPDATE GIT WRITTEN FAIL"
 const Record_delete_git_written_ok = "RECORD DELETE GIT WRITTEN OK"
 const Record_delete_git_written_fail = "RECORD DELETE GIT WRITTEN FAIL"
 
+const Record_operation_not_accepted = "OPERATION NOT ACCEPTABLE"
+
 const Event_written_record_topic_send_ok = "EVENT WRITTEN RECORD TOPIC SEND OK"
 const Event_written_record_topic_send_fail = "EVENT WRITTEN RECORD TOPIC SEND FAIL"
 
