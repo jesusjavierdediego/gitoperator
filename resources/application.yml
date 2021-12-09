@@ -16,8 +16,8 @@ kafka:
 gitserver:
   url: "http://git-server:3000"
   authtoken: ""
-  username: TestOrchestrator
-  password: TestOrchestrator
-  email: TestOrchestrator@xqledger.com
+  username: TestOrchestratorApp
+  password: TestOrchestratorApp
+  email: TestOrchestratorApp@xqledger.com
   localreposlocation: "/var/git/repositories/"
 
