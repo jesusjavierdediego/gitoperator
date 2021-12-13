@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rmdir -rf /var/git/repos/GitOperatorTestRepo
+rm -r /var/git/repos/GitOperatorTestRepo
 
 docker exec kafka kafka-topics --zookeeper zookeeper:2181 \
  --create --topic gitoperator-in \

@@ -1,7 +1,6 @@
 package gitactors
 
 import (
-	//"errors"
 	utils "xqledger/gitoperator/utils"
 	"os"
 	"path/filepath"
@@ -73,19 +72,7 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git pull origin")
 	w.Pull(&git.PullOptions{RemoteName: "origin"})
 
-	// Print the latest commit that was just pulled
-	ref, err := r.Head()
-	if err != nil {
-		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error getting HEAD reference")
-		return err
-	}
-	commitPull, err := r.CommitObject(ref.Hash())
-	if err != nil {
-		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in commit - Ref Hash: "+ref.Hash().String())
-		return err
-	}
-	utils.PrintLogInfo(componentDeleteMessage, methodMsg, commitPull.String())
-
+	// ADD
 	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git add file")
 	_, err = w.Add(completeFileName)
 	if err != nil {
@@ -93,43 +80,27 @@ func GitDeleteFile(event *utils.RecordEvent) error {
 		return err
 	}
 
-	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git status --porcelain")
-	status, err := w.Status()
-	if err != nil {
-		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error getting status in local repo")
-		return err
-	}
 
-	utils.PrintLogInfo(componentDeleteMessage, methodMsg, status.String())
-
+	// COMMIT
 	// Commits the current staging area to the repository, with the new file
 	// just created. We should provide the object.Signature of Author of the
 	// commit.
 	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git commit -m \""+completeFileName+"\"")
-	commit, err := w.Commit(completeFileName, &git.CommitOptions{
+	_, commitErr := w.Commit(completeFileName, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  config.Gitserver.Username,
 			Email: config.Gitserver.Email,
 			When:  time.Now(),
 		},
 	})
-	if err != nil {
+	if commitErr != nil {
 		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in commit - ID: "+event.Id)
 		return err
 	}
 
-	// Prints the current HEAD to verify that all worked well.
-	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git show -s")
-	obj, err := r.CommitObject(commit)
-	if err != nil {
-		utils.PrintLogError(err, componentDeleteMessage, methodMsg, "Error in showing commit for verification")
-		return err
-	}
 
-	utils.PrintLogInfo(componentDeleteMessage, methodMsg, obj.String())
+	// PUSH
 	utils.PrintLogInfo(componentDeleteMessage, methodMsg, "git push")
-
-	// push using default options
 	err = r.Push(&git.PushOptions{
 		Auth: &http.BasicAuth{
 			Username: config.Gitserver.Username,

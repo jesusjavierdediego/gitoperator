@@ -9,9 +9,46 @@ import (
 )
  
 const repo = "GitOperatorTestRepo"
+const batchId = "223456789123456789123456"
 const id = "123456789123456789123456"
 const email = "testorchestrator@gmail.com"
 const recordTime = int64(1636570869)
+
+func getBatch()utils.RecordEventBatch{
+	batch := utils.RecordEventBatch{}
+	batch.Id=batchId
+	batch.DBName=repo
+	batch.OperationType="new"
+	var records []utils.RecordEvent
+	records = append(records, getEvent())
+	records = append(records, getEvent())
+	batch.Records=records
+	return batch
+}
+
+func getUpdateBatch()utils.RecordEventBatch{
+	batch := utils.RecordEventBatch{}
+	batch.Id=batchId
+	batch.DBName=repo
+	batch.OperationType="update"
+	var records []utils.RecordEvent
+	records = append(records, getUpdateEvent())
+	records = append(records, getUpdateEvent())
+	batch.Records=records
+	return batch
+}
+
+func getDeleteBatch()utils.RecordEventBatch{
+	batch := utils.RecordEventBatch{}
+	batch.Id=batchId
+	batch.DBName=repo
+	batch.OperationType="delete"
+	var records []utils.RecordEvent
+	records = append(records, getDeleteEvent())
+	records = append(records, getDeleteEvent())
+	batch.Records=records
+	return batch
+}
 
 func getEvent()utils.RecordEvent{
 	record := utils.RecordEvent{}

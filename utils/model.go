@@ -5,6 +5,13 @@ package utils
 // DOMAIN         -----------> DBNAME -------> GIT REPOSITORY
 // JSON STRUCTURE -----------> GROUP --------> GIT FOLDER
 
+type RecordEventBatch struct {
+	Id   string `json:"id"` // Name of the file/record in the database
+	DBName string `json:"dbname"` // DB name mapped to Git repo
+	OperationType string `json:"operation_type"` // Values: (new | update | delete)
+	Records []RecordEvent `json:"records"` // Set of  record events
+}
+
 type RecordEvent struct {
 	Id   string `json:"id"` // Name of the file/record in the database
 	Group string `json:"group"` // Name of the Git tree/folder

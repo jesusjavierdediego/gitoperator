@@ -34,6 +34,7 @@ type kafka struct {
 	Partitioneofenabled bool
 	Autooffset string
 	Consumertopic string
+	Consumertopicbatch string
 	Gitactionbacktopic string
 	Messageminsize int
 	Messagemaxsize int

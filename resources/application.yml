@@ -9,6 +9,7 @@ kafka:
   partitioneofenabled: true
   autooffset: earliest
   consumertopic: gitoperator-in
+  consumertopicbatch: gitoperator-batch-in
   gitactionbacktopic: gitoperator-out
   messageminsize: 10e3
   messagemaxsize: 10e6

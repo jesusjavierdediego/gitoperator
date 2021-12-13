@@ -17,5 +17,6 @@ var config = configuration.GlobalConfiguration
 
 func main() {
 	utils.PrintLogInfo("GitOperator", componentMessage, "Start listening topic "+config.Kafka.Consumertopic)
-	topics.StartListening()
+	go topics.StartLIsteningBatches()
+	topics.StartListeningRecords()
 }

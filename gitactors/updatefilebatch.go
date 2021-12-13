@@ -15,34 +15,20 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
 )
 
-const componentUpdateMessage = "Git Update File Processor"
+const componentUpdateBatchMessage = "Git Update Batch Processor"
 // This example receives a command to update an existing  file into the git repo
 // - Pretty print
 // - apply changes to file
 // - Add
 // - commit
 // - push
-func GitUpdateFile(event *utils.RecordEvent) error {
+func GitUpdateFileBatch(batch *utils.RecordEventBatch) error {
 	
-	var methodMsg = "UpdateFile"
-	var fileName = event.Id + ".json"
+	var methodMsg = "GitUpdateFileBatch"
 
 	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "We are going to update the file")
 	
-	repoPath, err := GetLocalRepoPath(event)
-	if err != nil {
-		utils.PrintLogError(err, componentNewMessage, methodMsg, "Error getting path for local clones git repository: "+repoPath)
-	}
-	var completeFileName = ""
-	if len(event.Group) > 0 {
-		completeFileName = event.Group + "/" + fileName
-	} else {
-		completeFileName = fileName
-	}
-
-	var prettyJSON bytes.Buffer
-	json.Indent(&prettyJSON, []byte(event.RecordContent), "", "\t")
-	var prettyNewRecord = string(prettyJSON.Bytes())
+	repoPath := config.Gitserver.Localreposlocation + "/" + batch.DBName
 
 	r, openErr := git.PlainOpen(repoPath)
 	if openErr != nil {
@@ -50,7 +36,7 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 		/*
 		Error opening the local repo -> Try to clone the remote repo
 		*/
-		remoteRepoURL := config.Gitserver.Url + "/" + config.Gitserver.Username + "/" + event.DBName
+		remoteRepoURL := config.Gitserver.Url + "/" + config.Gitserver.Username + "/" + batch.DBName
 
 		utils.PrintLogInfo(componentUpdateMessage, methodMsg, "We are going to clone the remote repo if it exists - URL: " + remoteRepoURL)
 		cloneErr := Clone(remoteRepoURL, repoPath)
@@ -65,28 +51,25 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 
 	w, err := r.Worktree()
 	if err != nil {
-		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error getting Worktree in local Git repository: "+completeFileName)
+		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error getting Worktree in local Git repository")
 		return err
 	}
-
-	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "write content to file - "+completeFileName)
-	filePathAndName := filepath.Join(repoPath, completeFileName)
-	utils.PrintLogInfo(componentNewMessage, methodMsg, "filePathAndName to process: "+filePathAndName)
-
-
-	replaceContentInFile(filePathAndName, prettyNewRecord)
-	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "Written content to file - "+completeFileName)
 
 	//PULL FIRST
 	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "git pull origin")
 	w.Pull(&git.PullOptions{RemoteName: "origin"})
 
 
+	// Compose files in batch for update
+	for _, record := range batch.Records {
+		processUpdateFileInBatch(&record, repoPath)
+	}
+
 	// ADD FILE
 	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "git add file")
-	_, err = w.Add(completeFileName)
+	_, err = w.Add(".")
 	if err != nil {
-		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error in add - File: "+completeFileName)
+		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error in add all files in batch")
 		return err
 	}
 
@@ -94,8 +77,8 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 	// Commits the current staging area to the repository, with the new file
 	// just created. We should provide the object.Signature of Author of the
 	// commit.
-	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "git commit -m \""+completeFileName+"\"")
-	_, commitErr := w.Commit(completeFileName, &git.CommitOptions{
+	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "git commit -m \""+batch.Id+"\"")
+	_, commitErr := w.Commit(batch.Id, &git.CommitOptions{
 		Author: &object.Signature{
 			Name:  config.Gitserver.Username,
 			Email: config.Gitserver.Email,
@@ -103,11 +86,10 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 		},
 	})
 	if commitErr != nil {
-		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error in commit - ID: "+event.Id)
+		utils.PrintLogError(err, componentUpdateMessage, methodMsg, "Error in commit - Batch ID: "+batch.Id)
 		return err
 	}
 	
-
 	// PUSH
 	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "git push")
 	err = r.Push(&git.PushOptions{
@@ -125,7 +107,32 @@ func GitUpdateFile(event *utils.RecordEvent) error {
 	return nil
 }
 
-func replaceContentInFile(filepath string, newContent string) {
+func processUpdateFileInBatch(event *utils.RecordEvent, repoPath string) {
+	var methodMsg = "processUpdateFileInBatch"
+	var fileName = event.Id + ".json"
+
+	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "We are going to update the file")
+	
+	var completeFileName = ""
+	if len(event.Group) > 0 {
+		completeFileName = event.Group + "/" + fileName
+	} else {
+		completeFileName = fileName
+	}
+
+	var prettyJSON bytes.Buffer
+	json.Indent(&prettyJSON, []byte(event.RecordContent), "", "\t")
+	var prettyNewRecord = string(prettyJSON.Bytes())
+
+	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "write content to file - "+completeFileName)
+	filePathAndName := filepath.Join(repoPath, completeFileName)
+	utils.PrintLogInfo(componentNewMessage, methodMsg, "filePathAndName to process: "+filePathAndName)
+
+	replaceContentInFileBatch(filePathAndName, prettyNewRecord)
+	utils.PrintLogInfo(componentUpdateMessage, methodMsg, "Written content to file - "+completeFileName)
+}
+
+func replaceContentInFileBatch(filepath string, newContent string) {
 	var methodMsg = "replaceContentInFile"
 	dmp := diffmatchpatch.New()
 	oldContentBytes, err := ioutil.ReadFile(filepath)
