@@ -1,7 +1,7 @@
 package mediator
 
 import (
-	//"encoding/json"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -41,14 +41,14 @@ func synchronizedProcessBatch(wg *sync.WaitGroup, m *sync.Mutex, batch *utils.Re
 		batchErr = git.GitProcessNewBatch(batch)
 		logMsgOk = utils.Record_new_git_written_ok
 		logMsgFail = utils.Record_new_git_written_fail
-	// case "update":
-	// 	utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("Update batch with ID %s", batch.Id))
-	// 	batchErr = git.GitUpdateBatch(batch)
-	// 	logMsgOk = utils.Record_update_git_written_ok
-	// 	logMsgFail = utils.Record_update_git_written_fail
+	case "update":
+		utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("Update batch with ID %s", batch.Id))
+		batchErr = git.GitUpdateFileBatch(batch)
+		logMsgOk = utils.Record_update_git_written_ok
+		logMsgFail = utils.Record_update_git_written_fail
 	// case "delete":
 	// 	utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("Delete batch with ID %s", batch.Id))
-	// 	batchErr = git.GitDeleteBatch(batch)
+	// 	batchErr = git.GitDeleteFileBatch(batch)
 	// 	logMsgOk = utils.Record_delete_git_written_ok
 	// 	logMsgFail = utils.Record_delete_git_written_fail
 	default:
@@ -61,18 +61,26 @@ func synchronizedProcessBatch(wg *sync.WaitGroup, m *sync.Mutex, batch *utils.Re
 	}
 	utils.PrintLogInfo(componentMessage, methodMessage, logMsgOk)
 
-	// eventAsJSON, err := json.Marshal(batch)
-	// if err != nil {
-	// 	utils.PrintLogError(err, componentMessage, methodMessage, "batch cannot be marshaled properly after written to Git")
-	// }
-	// sendErr := SendMessageToTopic(string(eventAsJSON), config.Kafka.Gitactionbacktopic)
-	// if sendErr != nil {
-	// 	utils.PrintLogError(sendErr, componentMessage, methodMessage, utils.Event_written_record_topic_send_fail)
-
-	// }
-	// utils.PrintLogInfo(componentMessage, methodMessage, utils.Event_written_record_topic_send_ok)
-	// utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("DB Record in event succesfully sent to continuous query topic - batch ID '%s'", event.Id))
-	utils.PrintLogInfo(componentMessage, methodMessage, "Event processed successfully - ID: "+batch.Id)
+	
+	var batchRecordsToRDBErr []error
+	for _, event := range batch.Records {
+		eventAsJSON, err := json.Marshal(event)
+		if err != nil {
+			utils.PrintLogError(err, componentMessage, methodMessage, fmt.Sprintf("Event in batch cannot be marshaled to be sent to the RDB - Event ID '%s'", event.Id))
+		}
+		sendErr := SendMessageToTopic(string(eventAsJSON), config.Kafka.Gitactionbacktopic)
+		if sendErr != nil {
+			utils.PrintLogError(sendErr, componentMessage, methodMessage, utils.Event_written_record_topic_send_fail)
+			batchRecordsToRDBErr = append(batchRecordsToRDBErr, sendErr)
+	
+		}
+		utils.PrintLogInfo(componentMessage, methodMessage, utils.Event_written_record_topic_send_ok)
+		utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("DB Record in event succesfully sent to continuous query topic - batch ID '%s'", batch.Id))
+	}
+	
+	if len(batchRecordsToRDBErr) > 0 {
+		utils.PrintLogInfo(componentMessage, methodMessage, "Batch processed with errors sending records to RDB - ID: "+batch.Id)
+	}
 	m.Unlock()
 	wg.Done()
 }
@@ -112,17 +120,17 @@ func synchronizedProcessRecord(wg *sync.WaitGroup, m *sync.Mutex, event *utils.R
 	}
 	utils.PrintLogInfo(componentMessage, methodMessage, logMsgOk)
 
-	// eventAsJSON, err := json.Marshal(event)
-	// if err != nil {
-	// 	utils.PrintLogError(err, componentMessage, methodMessage, "Event cannot be marshaled properly after written to Git")
-	// }
-	// sendErr := SendMessageToTopic(string(eventAsJSON), config.Kafka.Gitactionbacktopic)
-	// if sendErr != nil {
-	// 	utils.PrintLogError(sendErr, componentMessage, methodMessage, utils.Event_written_record_topic_send_fail)
+	eventAsJSON, err := json.Marshal(event)
+	if err != nil {
+		utils.PrintLogError(err, componentMessage, methodMessage, "Event cannot be marshaled properly after written to Git")
+	}
+	sendErr := SendMessageToTopic(string(eventAsJSON), config.Kafka.Gitactionbacktopic)
+	if sendErr != nil {
+		utils.PrintLogError(sendErr, componentMessage, methodMessage, utils.Event_written_record_topic_send_fail)
 
-	// }
-	// utils.PrintLogInfo(componentMessage, methodMessage, utils.Event_written_record_topic_send_ok)
-	// utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("DB Record in event succesfully sent to continuous query topic - Event ID '%s'", event.Id))
+	}
+	utils.PrintLogInfo(componentMessage, methodMessage, utils.Event_written_record_topic_send_ok)
+	utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("DB Record in event succesfully sent to continuous query topic - Event ID '%s'", event.Id))
 	utils.PrintLogInfo(componentMessage, methodMessage, "Event processed successfully - ID: "+event.Id)
 	m.Unlock()
 	wg.Done()

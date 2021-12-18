@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# https://dzone.com/articles/viewing-junit-xml-files-locally
+# https://www.npmjs.com/package/junit-viewer
+
 if [[ -f "gitea" ]]
 then
     echo "The test IT Git repo DOES NOT EXIST in the filesystem. The Integration Test is not possible"
@@ -21,6 +24,8 @@ else
     PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessNewFile  2>&1 | go-junit-report > ../testreports/TestGitProcessNewFile.xml
     PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessUpdatedFile  2>&1 | go-junit-report > ../testreports/TestGitProcessUpdatedFile.xml
     PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessDeleteFile  2>&1 | go-junit-report > ../testreports/TestGitProcessDeleteFile.xml
+    PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessNewFileBatch  2>&1 | go-junit-report > ../testreports/TestGitProcessNewFileBatch.xml
+    PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessUpdateFileBatch  2>&1 | go-junit-report > ../testreports/TestGitProcessUpdateFileBatch.xml
     echo "Integration tests complete"
     echo "Cleaning up..."
     cd ../integration-tests
