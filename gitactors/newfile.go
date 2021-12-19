@@ -43,7 +43,7 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 	var openErr error
 	r, openErr = git.PlainOpen(repoPath)
 	if openErr != nil {
-		utils.PrintLogError(openErr, componentNewMessage, methodMsg, "Error opening local Git repository: "+repoPath)
+		utils.PrintLogWarn(openErr, componentNewMessage, methodMsg, fmt.Sprintf("Error opening local Git repository: %s - Let's clone the repo!", repoPath))
 		/*
 		Error opening the local repo -> Try to clone the remote repo
 		*/
@@ -60,7 +60,7 @@ func GitProcessNewFile(event *utils.RecordEvent) error {
 			return openErr
 		}
 	}
-
+	
 	w, err := r.Worktree()
 	if err != nil {
 		utils.PrintLogError(err, componentNewMessage, methodMsg, "Error getting Worktree in local Git repository: "+repoPath)
