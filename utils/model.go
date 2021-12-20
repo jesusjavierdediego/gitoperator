@@ -31,4 +31,3 @@ type ClassiffiedEventsSet struct {
 	ParEvents   []RecordEvent `json:"par_events"`
 }
 
-

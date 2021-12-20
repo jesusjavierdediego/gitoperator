@@ -23,6 +23,7 @@ type gitserver struct {
 	Password string
 	Email string
 	Localreposlocation string
+	Timeout int
 }
 
 type kafka struct {

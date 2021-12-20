@@ -15,13 +15,13 @@ kafka:
   messagemaxsize: 10e6
 
 gitserver:
-  url: http://localhost:3000
-  authtoken: ""
+  url: http://localhost:3000/api/v1
+  authtoken: "token 673af4a51987715e1ec5a41cd8e1742437b5ba19"
   username: TestOrchestrator
   password: TestOrchestrator
-  email: testorchestrator@gmail.com
+  email: testorchestrator@xqledger.com
   localreposlocation: "/var/git/repos"
-
+  timeout: 10000
   
 
 

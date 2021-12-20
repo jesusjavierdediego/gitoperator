@@ -51,27 +51,6 @@ func StartListeningRecords() {
 	}
 }
 
-func StartLIsteningBatches() {
-	methodMsg := "StartLIsteningBatches"
-	reader := getKafkaReader(config.Kafka.Consumertopicbatch)
-	defer reader.Close()
-	for {
-		m, err := reader.ReadMessage(context.Background())
-		if err != nil {
-			utils.PrintLogError(err, componentMessage, methodMsg, fmt.Sprintf("%s - Error reading message", utils.Event_topic_received_fail))
-		}
-		// msg := fmt.Sprintf("Message received at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-		// utils.PrintLogInfo(componentMessage, methodMsg, msg)
-		batch, batchErr := convertMessageToProcessableBatch(m)
-		if batchErr != nil {
-			utils.PrintLogError(batchErr, componentMessage, methodMsg, fmt.Sprintf("%s - Batch convertion error - Key '%s'", utils.Event_topic_received_unacceptable, m.Key))
-		} else {
-			utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("%s - Message converted to batch successfully - Key '%s'", utils.Event_topic_received_ok, m.Key))
-			mediator.ProcessSyncIncomingMessageBatch(&batch)
-		}
-	}
-}
-
 
 func convertMessageToProcessable(msg kafka.Message) (utils.RecordEvent, error) {
 	methodMsg := "convertMessageToProcessable"

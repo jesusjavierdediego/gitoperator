@@ -21,4 +21,6 @@ gitserver:
   password: TestOrchestrator
   email: TestOrchestratorApp@xqledger.com
   localreposlocation: "/var/git/repositories/"
+  timeout: 10000
+
 
