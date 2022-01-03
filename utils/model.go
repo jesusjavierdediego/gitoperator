@@ -14,6 +14,7 @@ type RecordEventBatch struct {
 
 type RecordEvent struct {
 	Id   string `json:"id"` // Name of the file/record in the database
+	Session string `json:"session"` // Name of the Git branch
 	Group string `json:"group"` // Name of the Git tree/folder
 	DBName string `json:"dbname"` // DB name mapped to Git repo
 	User string `json:"user"` // email of the individual performing the change

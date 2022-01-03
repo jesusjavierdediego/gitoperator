@@ -1,5 +1,6 @@
 package utils
 
+
 func Contains(s []string, e string) bool {
     for _, a := range s {
         if a == e {
@@ -27,3 +28,4 @@ func RemoveElementFromSlice(series []string, value string) []string{
 	}
 	return series
 }
+

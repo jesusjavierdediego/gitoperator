@@ -23,7 +23,12 @@ type gitserver struct {
 	Password string
 	Email string
 	Localreposlocation string
+	Strategy strategy
+}
+
+type strategy struct {
 	Timeout int
+	Deletebranchaftermerge bool
 }
 
 type kafka struct {

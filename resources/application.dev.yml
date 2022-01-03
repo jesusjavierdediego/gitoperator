@@ -21,7 +21,9 @@ gitserver:
   password: TestOrchestrator
   email: testorchestrator@xqledger.com
   localreposlocation: "/var/git/repos"
-  timeout: 10000
+  strategy:
+    timeout: 10000
+    deletebranchaftermerge: true
   
 
 

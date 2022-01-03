@@ -11,9 +11,8 @@ import (
 	"time"
 	configuration "xqledger/gitoperator/configuration"
 	utils "xqledger/gitoperator/utils"
-
-	"gopkg.in/resty.v1"
 	"github.com/google/uuid"
+	"gopkg.in/resty.v1"
 	kafka "github.com/segmentio/kafka-go"
 )
 
@@ -32,26 +31,13 @@ func getAPIClient() *resty.Client{
 		return client
 	}
 	client = resty.New()
-	client.SetTimeout(time.Duration(config.Gitserver.Timeout) * time.Millisecond)
+	client.SetTimeout(time.Duration(config.Gitserver.Strategy.Timeout) * time.Millisecond)
 	client.SetHeaders(map[string]string{
         "Content-Type": "application/json",
         "User-Agent": "GitOperator",
 		"Authorization": config.Gitserver.Authtoken,
     })
 	return client
-}
-
-
-func CreatePullRequest(repoName string, pr CreatePullRequestOption) error{
-	c := getAPIClient()
-	_, err := c.R().
-		SetBody(pr).
-		Post(fmt.Sprintf("%s/repos/%s/%s/pulls", config.Gitserver.Url, config.Gitserver.Username, repoName))
-
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func getFile(filename string) (ContentsResponse, error) {
@@ -78,7 +64,6 @@ func getFile(filename string) (ContentsResponse, error) {
 	}
 	return contentResponse, nil
 }
-
 
 func getNameFromEmail(email string) (string, error) {
 	at := strings.LastIndex(email, "@")
@@ -110,9 +95,14 @@ func CreateFileInRepo(event *utils.RecordEvent) error{
 	} else {
 		identity.Name = username
 	}
+	var session = "master"
+	if len(event.Session) > 0 {
+		session = event.Session
+		// optional: check if the branch exists
+	}
 	identity.Email = event.User
 	payload.Author = identity
-	payload.Branch = "master"
+	payload.Branch = session
 	payload.Committer = identity
 	payload.Message = event.Id
 	payload.New_branch = ""
@@ -148,9 +138,13 @@ func UpdateFileInRepo(event *utils.RecordEvent) error{
 	} else {
 		identity.Name = username
 	}
+	var session = "master"
+	if len(event.Session) > 0 {
+		session = event.Session
+	}
 	identity.Email = event.User
 	payload.Author = identity
-	payload.Branch = "master"
+	payload.Branch = session
 	payload.Committer = identity
 	payload.Message = event.Id
 	payload.New_branch = ""
@@ -199,9 +193,13 @@ func DeleteFileInRepo(event *utils.RecordEvent) error{
 	} else {
 		identity.Name = username
 	}
+	var session = "master"
+	if len(event.Session) > 0 {
+		session = event.Session
+	}
 	identity.Email = event.User
 	payload.Author = identity
-	payload.Branch = "master"
+	payload.Branch = session
 	payload.Committer = identity
 	payload.Message = event.Id
 	payload.New_branch = ""
@@ -259,18 +257,6 @@ func SendMessageToTopic(event *utils.RecordEvent) {
 	utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("Message sent to topic '%s' successfully", topic))
 }
 
-type CreatePullRequestOption struct {
-	Description   string `json:"description"`
-	Assignee   string `json:"assignee"`
-	Assignees   []string `json:"assignees"`
-	Base   string `json:"base"`
-	Body   string `json:"body"`
-	Due_date   string `json:"due_date"`
-	Head   []string `json:"head"`
-	Labels   []int64 `json:"labels"`
-	Milestone   int64 `json:"milestone"`
-	Title   string `json:"title"`
-}
 
 type Identity struct {
 	Email   string `json:"email"`
@@ -327,4 +313,3 @@ type ContentsResponse struct {
 	Git_url   string `json:"git_url"`
 	Download_url   string `json:"download_url"`
 }
-

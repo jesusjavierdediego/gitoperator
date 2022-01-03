@@ -46,7 +46,12 @@ func StartListeningRecords() {
 			utils.PrintLogError(eventErr, componentMessage, methodMsg, fmt.Sprintf("%s - Record event message convertion error - Key '%s'", utils.Event_topic_received_unacceptable, m.Key))
 		} else {
 			utils.PrintLogInfo(componentMessage, methodMsg, fmt.Sprintf("%s - Message converted to record event successfully - Key '%s'", utils.Event_topic_received_ok, m.Key))
-			mediator.ProcessSyncIncomingMessageRecord(&event)
+			if len(event.Session) > 0 {
+				mediator.ProcessConcurrentncomingMessageRecord(&event)
+			} else {
+				mediator.ProcessSyncIncomingMessageRecord(&event)
+			}
+			
 		}
 	}
 }

@@ -1,29 +1,21 @@
 package mediator
 
 import (
-	"sync"
 	"errors"
 	"fmt"
 	"log"
 	api "xqledger/gitoperator/giteaapiclient"
 	utils "xqledger/gitoperator/utils"
-	configuration "xqledger/gitoperator/configuration"
 )
 
-const componentMessage = "ConcurrentProcessor"
-var config = configuration.GlobalConfiguration
 
-func ProcessSyncIncomingMessageRecord(event *utils.RecordEvent) {
-	var w sync.WaitGroup
-	var m sync.Mutex
-	w.Add(1)
-	go synchronizedProcessRecord(&w, &m, event)
-	w.Wait()
+func ProcessConcurrentncomingMessageRecord(event *utils.RecordEvent) {
+	utils.PrintLogInfo(componentMessage, "ProcessAsyncIncomingMessageRecord", fmt.Sprintf("Operation in session '%s'", event.Session))
+	go concurrentProcessRecord(event)
 }
 
-func synchronizedProcessRecord(wg *sync.WaitGroup, m *sync.Mutex, event *utils.RecordEvent) {
-	methodMessage := "synchronizedProcessRecord"
-	m.Lock()
+func concurrentProcessRecord(event *utils.RecordEvent) {
+	methodMessage := "concurrentProcessRecord"
 	var apiErr error
 	var logMsgFail = ""
 	utils.PrintLogInfo(componentMessage, methodMessage, "event.OperationType: "+event.OperationType)
@@ -47,8 +39,6 @@ func synchronizedProcessRecord(wg *sync.WaitGroup, m *sync.Mutex, event *utils.R
 		return
 	}
 	utils.PrintLogInfo(componentMessage, methodMessage, "Operation processed")
-	m.Unlock()
-	wg.Done()
 }
 
 
