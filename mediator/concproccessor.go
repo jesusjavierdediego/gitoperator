@@ -8,10 +8,16 @@ import (
 	utils "xqledger/gitoperator/utils"
 )
 
+var opsInSession []string
 
 func ProcessConcurrentncomingMessageRecord(event *utils.RecordEvent) {
 	utils.PrintLogInfo(componentMessage, "ProcessAsyncIncomingMessageRecord", fmt.Sprintf("Operation in session '%s'", event.Session))
-	go concurrentProcessRecord(event)
+	if utils.Contains(opsInSession, event.Session) {
+		ProcessSyncIncomingMessageRecord(event)
+	} else {
+		opsInSession = append(opsInSession, event.Session)
+		go concurrentProcessRecord(event)
+	}
 }
 
 func concurrentProcessRecord(event *utils.RecordEvent) {
@@ -34,6 +40,7 @@ func concurrentProcessRecord(event *utils.RecordEvent) {
 		logMsgFail = utils.Record_operation_not_accepted
 	}
 	log.Println(fmt.Sprintf("Event iD: %s", event.Id))
+	utils.RemoveElementFromSlice(opsInSession, event.Session)
 	if len(logMsgFail) > 0 {
 		utils.PrintLogError(apiErr, componentMessage, methodMessage, logMsgFail)
 		return

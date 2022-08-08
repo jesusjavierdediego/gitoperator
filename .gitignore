@@ -3,3 +3,6 @@ gitoperator
 integration-tests/gitea
 integration-tests/mysql
 testreports/*.xml
+
+go.mod
+go.sum
