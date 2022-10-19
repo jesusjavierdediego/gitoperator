@@ -17,4 +17,7 @@ COPY --from=golang /go/src/xqledger/gitoperator/resources/application.yml ./
 ENV ZONEINFO /zoneinfo.zip
 COPY --from=alpine /zoneinfo.zip /
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+RUN git config --global user.name 'TestOrchestrator'
+RUN git config --global user.email 'TestOrchestrator@gmail.com'
+RUN git config --global user.signingkey '21BE044483C263AC!'
 ENTRYPOINT ["/app"]

@@ -8,6 +8,10 @@ import (
 	utils "xqledger/gitoperator/utils"
 )
 
+// WARNING!
+// ProcessConcurrentncomingMessageRecord is just a test 
+// to check the behavior of concurrent writing to Git.
+
 var opsInSession []string
 
 func ProcessConcurrentncomingMessageRecord(event *utils.RecordEvent) {

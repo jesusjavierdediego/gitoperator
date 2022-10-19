@@ -40,12 +40,12 @@ func getAPIClient() *resty.Client{
 	return client
 }
 
-func getFile(filename string) (ContentsResponse, error) {
+func getFile(dbname, filename string) (ContentsResponse, error) {
 	methodMessage := "getFile"
 	var contentResponse ContentsResponse
 	c := getAPIClient()
 	resp, err := c.R().
-		Get(fmt.Sprintf(apiFilePath, config.Gitserver.Url, config.Gitserver.Username, filename + ".json"))
+		Get(fmt.Sprintf(apiFilePath, config.Gitserver.Url, config.Gitserver.Username, dbname, filename + ".json"))
 	if err != nil {
 		utils.PrintLogError(err, componentMessage, methodMessage, utils.Record_new_git_written_fail)
 		return contentResponse, err
@@ -88,22 +88,28 @@ func getValidContentFromEventContent(content string) (string, error) {
 func CreateFileInRepo(event *utils.RecordEvent) error{
 	methodMessage := "CreateFileInRepo" 
 	var payload CreateFileOptions
-	var identity Identity
+	var author Identity
 	username, emailErr := getNameFromEmail(event.User)
 	if emailErr != nil {
-		identity.Name = event.User
+		author.Name = config.Gitserver.Username
 	} else {
-		identity.Name = username
+		author.Name = username
 	}
+	author.Email = event.User
+
+	var committer Identity
+	committer.Name = config.Gitserver.Username
+	committer.Email = config.Gitserver.Email
+	
 	var session = "master"
 	if len(event.Session) > 0 {
 		session = event.Session
-		// optional: check if the branch exists
+		// TODO: check if the branch exists
 	}
-	identity.Email = event.User
-	payload.Author = identity
+	
+	payload.Author = author
 	payload.Branch = session
-	payload.Committer = identity
+	payload.Committer = committer
 	payload.Message = event.Id
 	payload.New_branch = ""
 	payload.Signoff =  true
@@ -123,8 +129,10 @@ func CreateFileInRepo(event *utils.RecordEvent) error{
 		utils.PrintLogError(err, componentMessage, methodMessage, utils.Record_new_git_written_fail)
 		return err
 	}
-	go utils.PrintLogInfo(componentMessage, methodMessage, utils.Record_new_git_written_ok)
-	go SendMessageToTopic(event)
+	utils.PrintLogInfo(componentMessage, methodMessage, utils.Record_new_git_written_ok)
+	ch := make(chan bool)
+	go SendMessageToTopic(event, ch)
+	<-ch
 	return nil
 }
 
@@ -150,7 +158,7 @@ func UpdateFileInRepo(event *utils.RecordEvent) error{
 	payload.New_branch = ""
 	payload.Signoff =  true
 
-	currentFile, shaErr := getFile(event.Id)
+	currentFile, shaErr := getFile(event.DBName, event.Id)
 	if shaErr != nil {
 		return shaErr
 	}
@@ -170,15 +178,20 @@ func UpdateFileInRepo(event *utils.RecordEvent) error{
 	payload.Content = base64.StdEncoding.EncodeToString([]byte(validContent))
 
 	c := getAPIClient()
+	path := fmt.Sprintf(apiFilePath, config.Gitserver.Url, config.Gitserver.Username, event.DBName, event.Id + ".json")
+	fmt.Println(path)
 	_, err := c.R().
 		SetBody(payload).
-		Put(fmt.Sprintf(apiFilePath, config.Gitserver.Url, config.Gitserver.Username, event.DBName, event.Id + ".json"))
+		//Post(fmt.Sprintf(apiFilePath, config.Gitserver.Url, config.Gitserver.Username, event.DBName, event.Id + ".json"))
+		Put(path)
 	if err != nil {
 		utils.PrintLogError(err, componentMessage, methodMessage, utils.Record_update_git_written_fail)
 		return err
 	}
-	go utils.PrintLogInfo(componentMessage, methodMessage, utils.Record_update_git_written_ok)
-	go SendMessageToTopic(event)
+	utils.PrintLogInfo(componentMessage, methodMessage, utils.Record_update_git_written_ok)
+	ch := make(chan bool)
+	go SendMessageToTopic(event, ch)
+	<-ch
 	return nil
 }
 
@@ -213,8 +226,12 @@ func DeleteFileInRepo(event *utils.RecordEvent) error{
 		utils.PrintLogError(err, componentMessage, methodMessage, utils.Record_delete_git_written_fail)
 		return err
 	}
-	go utils.PrintLogInfo(componentMessage, methodMessage, utils.Record_delete_git_written_ok)
-	go SendMessageToTopic(event)
+	utils.PrintLogInfo(componentMessage, methodMessage, utils.Record_delete_git_written_ok)
+	
+	ch := make(chan bool)
+	go SendMessageToTopic(event, ch)
+	<-ch
+	utils.PrintLogInfo(componentMessage, methodMessage, utils.Record_delete_git_written_ok)
 	return nil
 }
 
@@ -230,7 +247,7 @@ func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	}
 }
 
-func SendMessageToTopic(event *utils.RecordEvent) {
+func SendMessageToTopic(event *utils.RecordEvent, ch chan bool) {
 	methodMessage := "SendMessageToTopic"
 
 	eventAsJSON, err := json.Marshal(event)
@@ -255,6 +272,8 @@ func SendMessageToTopic(event *utils.RecordEvent) {
 		utils.PrintLogError(writeErr, componentMessage, methodMessage, fmt.Sprintf("Error writing message to topic '%s'", topic))
 	}
 	utils.PrintLogInfo(componentMessage, methodMessage, fmt.Sprintf("Message sent to topic '%s' successfully", topic))
+
+	ch <- true
 }
 
 

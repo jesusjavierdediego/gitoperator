@@ -18,14 +18,7 @@ else
     PROFILE=dev go test xqledger/gitoperator/apilogger -v  2>&1 | go-junit-report > ../testreports/apilogger.xml
     PROFILE=dev go test xqledger/gitoperator/configuration -v 2>&1 | go-junit-report > ../testreports/configuration.xml
     PROFILE=dev go test xqledger/gitoperator/utils -v 2>&1 | go-junit-report > ../testreports/utils.xml
-    PROFILE=dev go test xqledger/gitoperator/mediator -v  2>&1 | go-junit-report > ../testreports/mediator.xml
-    PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGetLocalRepoPath  2>&1 | go-junit-report > ../testreports/TestGetLocalRepoPath.xml
-    PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestCloneRepo  2>&1 | go-junit-report > ../testreports/TestCloneRepo.xml
-    PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessNewFile  2>&1 | go-junit-report > ../testreports/TestGitProcessNewFile.xml
-    PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessUpdatedFile  2>&1 | go-junit-report > ../testreports/TestGitProcessUpdatedFile.xml
-    PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessDeleteFile  2>&1 | go-junit-report > ../testreports/TestGitProcessDeleteFile.xml
-    PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessNewFileBatch  2>&1 | go-junit-report > ../testreports/TestGitProcessNewFileBatch.xml
-    PROFILE=dev go test xqledger/gitoperator/gitactors -v -run TestGitProcessUpdateFileBatch  2>&1 | go-junit-report > ../testreports/TestGitProcessUpdateFileBatch.xml
+    PROFILE=dev go test xqledger/gitoperator/giteaapiclient -v  2>&1 | go-junit-report > ../testreports/giteaapiclient.xml
     echo "Integration tests complete"
     echo "Cleaning up..."
     cd ../integration-tests

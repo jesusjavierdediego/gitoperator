@@ -16,10 +16,10 @@ kafka:
 
 gitserver:
   url: http://localhost:3000/api/v1
-  authtoken: "token 673af4a51987715e1ec5a41cd8e1742437b5ba19"
+  authtoken: "token 34c663656f4f319e887d8f151cbb30c06ec3c9f8"
   username: TestOrchestrator
   password: TestOrchestrator
-  email: testorchestrator@xqledger.com
+  email: TestOrchestrator@gmail.com
   localreposlocation: "/var/git/repos"
   strategy:
     timeout: 10000

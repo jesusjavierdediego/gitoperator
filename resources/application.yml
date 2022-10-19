@@ -19,7 +19,7 @@ gitserver:
   authtoken: ""
   username: TestOrchestrator
   password: TestOrchestrator
-  email: TestOrchestratorApp@xqledger.com
+  email: TestOrchestrator@gmail.com
   localreposlocation: "/var/git/repositories/"
   strategy:
     timeout: 10000
